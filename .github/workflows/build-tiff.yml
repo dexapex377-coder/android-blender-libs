@@ -60,7 +60,7 @@ jobs:
       - name: Prepare output
         run: |
           mkdir -p TIFF/lib TIFF/include
-          cp -v install_root/lib/libtiff.a TIFF/lib/
+          cp -v install_root/lib/libtiff*.so* TIFF/lib/ 2>/dev/null || cp -v install_root/lib/libtiff*.a TIFF/lib/
           cp -rv install_root/include/* TIFF/include/
           echo "=== TIFF structure ==="
           find TIFF -type f
