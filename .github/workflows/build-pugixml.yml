@@ -64,5 +64,5 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "PugiXML 1.14 - Android arm64 API 29"
-            git push
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git push
           fi
