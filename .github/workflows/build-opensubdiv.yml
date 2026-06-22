@@ -27,8 +27,8 @@ jobs:
 
           curl -L https://github.com/PixarAnimationStudios/OpenSubdiv/archive/refs/tags/v3_7_0.tar.gz | tar xz
 
-          # Patch osd/CMakeLists.txt to set CMP0021 NEW
-          sed -i '1i cmake_policy(SET CMP0021 NEW)' OpenSubdiv-3_7_0/opensubdiv/osd/CMakeLists.txt
+          # Patch osd/CMakeLists.txt to set CMP0021 OLD (allow install without DESTINATION)
+          sed -i '1i cmake_policy(SET CMP0021 OLD)' OpenSubdiv-3_7_0/opensubdiv/osd/CMakeLists.txt
 
           cmake -B build_osd -S OpenSubdiv-3_7_0 \
             -G Ninja \
@@ -51,7 +51,7 @@ jobs:
             -DNO_GLEW_GLX=ON \
             -DNO_CLEW=ON \
             -DNO_GLFW=ON \
-            -DCMAKE_POLICY_DEFAULT_CMP0021=NEW \
+            -DCMAKE_POLICY_DEFAULT_CMP0021=OLD \
             -DCMAKE_SKIP_INSTALL_ALL_DEPENDENCY=ON \
             -DCMAKE_INSTALL_PREFIX=install_root
 

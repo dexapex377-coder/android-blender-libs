@@ -31,6 +31,10 @@ jobs:
 
           # Create tbb_stddef.h compat header for oneTBB (though USE_TBB=OFF)
           echo '#include <tbb/version.h>' > Tbb/include/tbb/tbb_stddef.h
+          # Fix cmake path: ensure IMath/lib/cmake/Imath/ exists for find_package
+          rm -rf "$LIB_DIR/IMath/lib/cmake"
+          mkdir -p "$LIB_DIR/IMath/lib"
+          cp -r "$LIB_DIR/IMath/cmake" "$LIB_DIR/IMath/lib/cmake" 2>/dev/null || true
 
           cmake -B build_oii -S OpenImageIO-3.1.14.0 \
             -G Ninja \
@@ -52,8 +56,9 @@ jobs:
             -DUSE_LIBCPLUSPLUS=OFF \
             -DZLIB_LIBRARY="$SYSROOT/usr/lib/aarch64-linux-android/29/libz.so" \
             -DZLIB_INCLUDE_DIR="$SYSROOT/usr/include" \
+            -DImath_DIR="$LIB_DIR/IMath/lib/cmake/Imath" \
             -DImath_ROOT="$LIB_DIR/IMath" \
-            -DCMAKE_PREFIX_PATH="$LIB_DIR/IMath" \
+            -DCMAKE_PREFIX_PATH="$LIB_DIR/IMath:$LIB_DIR/boost/boost_1_71_0" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_oii -j$(nproc) || ninja -C build_oii -j1

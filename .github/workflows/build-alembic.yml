@@ -31,6 +31,10 @@ jobs:
 
           # Alembic needs IMath and Boost - point to our prebuilt libs
           IMath_ROOT_DIR="$LIB_DIR/IMath"
+          # Fix cmake path: ensure IMath/lib/cmake/Imath/ exists for find_package
+          rm -rf "$IMath_ROOT_DIR/lib/cmake"
+          mkdir -p "$IMath_ROOT_DIR/lib"
+          cp -r "$IMath_ROOT_DIR/cmake" "$IMath_ROOT_DIR/lib/cmake" 2>/dev/null || true
 
           cmake -B build_abc -S alembic-1.8.11 \
             -G Ninja \
@@ -47,8 +51,9 @@ jobs:
             -DUSE_MAYA=OFF \
             -DUSE_PRMAN=OFF \
             -DALEMBIC_SHARED_LIBS=ON \
+            -DImath_DIR="$IMath_ROOT_DIR/lib/cmake/Imath" \
             -DImath_ROOT="$IMath_ROOT_DIR" \
-            -DBoost_INCLUDE_DIR="$LIB_DIR/Boost/include" \
+            -DBoost_INCLUDE_DIR="$LIB_DIR/boost/boost_1_71_0" \
             -DBoost_NO_BOOST_CMAKE=ON \
             -DBoost_NO_SYSTEM_PATHS=ON \
             -DCMAKE_PREFIX_PATH="$IMath_ROOT_DIR" \

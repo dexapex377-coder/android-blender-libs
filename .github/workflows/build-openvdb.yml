@@ -53,9 +53,10 @@ jobs:
             -DUSE_BLOSC=ON \
             -DBlosc_ROOT="$LIB_DIR/blosc" \
             -DTBB_ROOT_DIR="$LIB_DIR/Tbb" \
-            -DBoost_INCLUDE_DIR="$LIB_DIR/Boost/include" \
+            -DBoost_INCLUDE_DIR="$LIB_DIR/boost/boost_1_71_0" \
             -DBoost_NO_BOOST_CMAKE=ON \
             -DBoost_NO_SYSTEM_PATHS=ON \
+            -DCMAKE_POLICY_DEFAULT_CMP0167=OLD \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_vdb -j$(nproc) || ninja -C build_vdb -j1

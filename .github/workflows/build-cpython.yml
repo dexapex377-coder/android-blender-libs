@@ -29,6 +29,8 @@ jobs:
 
           # Install host tools (readelf is needed for cross-build configure)
           sudo apt-get update && sudo apt-get install -y binutils
+          # Also use NDK's llvm-readelf as readelf
+          export READELF="$TOOLCHAIN/bin/llvm-readelf"
 
           # Download Python source
           curl -L https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz | tar xz

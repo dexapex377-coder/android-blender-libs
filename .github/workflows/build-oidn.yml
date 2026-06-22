@@ -41,6 +41,8 @@ jobs:
             -DOIDN_API_NAMESPACE=oidn \
             -DTBB_ROOT="$LIB_DIR/Tbb" \
             -DTBB_ROOT_DIR="$LIB_DIR/Tbb" \
+            -DTBB_INCLUDE_DIR="$LIB_DIR/Tbb/include" \
+            -DTBB_LIBRARY="$LIB_DIR/Tbb/lib/libtbb.so" \
             -DOIDN_BUILD_TOOLS=OFF \
             -DOIDN_BUILD_TESTS=OFF \
             -DCMAKE_INSTALL_PREFIX=install_root

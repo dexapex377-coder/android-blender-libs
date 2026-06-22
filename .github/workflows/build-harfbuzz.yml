@@ -30,6 +30,9 @@ jobs:
           AR="$TOOLCHAIN/bin/llvm-ar"
           STRIP="$TOOLCHAIN/bin/llvm-strip"
 
+          # Install meson for build
+          pip install meson ninja 2>/dev/null || pip3 install meson ninja
+
           curl -L https://github.com/harfbuzz/harfbuzz/releases/download/8.3.0/harfbuzz-8.3.0.tar.xz | tar xJ
 
           printf '[binaries]\n' > android_arm64.txt
