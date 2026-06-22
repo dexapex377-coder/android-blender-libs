@@ -43,8 +43,11 @@ jobs:
             -DUSE_STATIC=OFF \
             -DUSE_SHARED=ON \
             -DUSE_LIBXML=ON \
+            -DLIBXML2_INCLUDE_DIR="$SYSROOT/usr/include/libxml2" \
+            -DLIBXML2_LIBRARY="$SYSROOT/usr/lib/aarch64-linux-android/29/libxml2.so" \
             -DUSE_COLLADA_VALIDATOR=OFF \
             -DUSE_DAE_VALIDATOR=OFF \
+            -DUSE_PCRE=OFF \
             -DCMAKE_POLICY_DEFAULT_CMP0021=OLD \
             -DCMAKE_POLICY_DEFAULT_CMP0054=OLD \
             -DCMAKE_SKIP_INSTALL_ALL_DEPENDENCY=ON \

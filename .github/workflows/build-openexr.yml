@@ -66,6 +66,10 @@ jobs:
             cp -v "$f" OpenExr/lib/
           done
 
+          # Copy cmake config files
+          mkdir -p OpenExr/lib/cmake
+          cp -rv install_root/lib/cmake/OpenEXR* OpenExr/lib/cmake/ 2>/dev/null || true
+
           # Copy headers
           cp -rv install_root/include/OpenEXR/* OpenExr/include/OpenEXR/
           cp -rv install_root/include/Imath/* OpenExr/include/Imath/ 2>/dev/null || true
