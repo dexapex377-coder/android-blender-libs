@@ -1,0 +1,109 @@
+name: Build FFmpeg for Android
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '**/*.md'
+
+jobs:
+  build-ffmpeg:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Build FFmpeg
+        run: |
+          set -e
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64"
+          SYSROOT="$TOOLCHAIN/sysroot"
+          API=29
+          ARCH=aarch64
+          CPU=armv8-a
+          TARGET=aarch64-linux-android
+          CC="$TOOLCHAIN/bin/${TARGET}${API}-clang"
+          CXX="$TOOLCHAIN/bin/${TARGET}${API}-clang++"
+          AR="$TOOLCHAIN/bin/llvm-ar"
+          NM="$TOOLCHAIN/bin/llvm-nm"
+          RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
+          STRIP="$TOOLCHAIN/bin/llvm-strip"
+
+          curl -L https://ffmpeg.org/releases/ffmpeg-7.0.2.tar.xz | tar xJ
+          cd ffmpeg-7.0.2
+
+          ./configure \
+            --prefix=$(pwd)/../install_root \
+            --target-os=android \
+            --arch=$ARCH \
+            --cpu=$CPU \
+            --enable-cross-compile \
+            --cc=$CC \
+            --cxx=$CXX \
+            --ar=$AR \
+            --nm=$NM \
+            --ranlib=$RANLIB \
+            --strip=$STRIP \
+            --sysroot=$SYSROOT \
+            --disable-doc \
+            --disable-programs \
+            --disable-ffplay \
+            --disable-ffprobe \
+            --disable-ffmpeg \
+            --disable-postproc \
+            --disable-avdevice \
+            --disable-network \
+            --disable-autodetect \
+            --enable-shared \
+            --disable-static \
+            --enable-pic \
+            --enable-pthreads \
+            --enable-small \
+            --enable-avcodec \
+            --enable-avformat \
+            --enable-avutil \
+            --enable-swscale \
+            --enable-swresample \
+            --enable-avfilter \
+            --enable-encoder=mjpeg,png,bmp,gif \
+            --enable-decoder=h264,hevc,vp8,vp9,mpeg4,mpeg1video,mpeg2video,h263,theora,wmv3,vc1,aac,aac_latm,mp3,ac3,eac3,flac,opus,vorbis,pcm_s16le,pcm_s32le,pcm_f32le,pcm_f64le,mjpeg,png,bmp,gif,rawvideo \
+            --enable-muxer=mp4,mov,matroska,webm,flv,avi,mpegts,mpeg1system,mpeg1vcd,mpeg2dvd,ogg,mp3,wav,image2 \
+            --enable-demuxer=mp4,mov,matroska,webm,flv,avi,mpegts,mpegps,ogg,wav,aac,mp3,ac3,eac3,flac,image2,gif,concat \
+            --enable-parser=h264,hevc,vp8,vp9,vp3,mpeg4video,mpegaudio,aac,ac3,flac,opus \
+            --enable-bsf=h264_mp4toannexb,hevc_mp4toannexb,aac_adtstoasc \
+            --enable-protocol=file \
+            --enable-asm \
+            --enable-neon \
+            --extra-cflags="-fPIC -DANDROID -march=$CPU -O2 -fomit-frame-pointer" \
+            --extra-ldflags="-Wl,-z,max-page-size=16384"
+
+          make -j$(nproc)
+          make install
+          cd ..
+
+      - name: Prepare output
+        run: |
+          mkdir -p ffmpeg/lib ffmpeg/include
+          for f in install_root/lib/*.so; do [ -f "$f" ] || continue; cp -v "$f" ffmpeg/lib/; done
+          cp -rv install_root/include/* ffmpeg/include/ 2>/dev/null || true
+          cp -rv install_root/lib/pkgconfig ffmpeg/ 2>/dev/null || true
+          echo "=== ffmpeg structure ==="
+          find ffmpeg -type f | head -20
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A ffmpeg/
+          if git diff --cached --quiet; then echo "No changes"; else
+            git commit -m "FFmpeg 7.0.2 - Android arm64 API 29"
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            git fetch origin master && git rebase FETCH_HEAD && git push
+          fi

@@ -1,0 +1,68 @@
+name: Build OpenBLAS for Android
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '**/*.md'
+
+jobs:
+  build-openblas:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Build OpenBLAS
+        run: |
+          set -e
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64"
+
+          curl -L https://github.com/OpenMathLib/OpenBLAS/archive/refs/tags/v0.3.27.tar.gz | tar xz
+
+          cd OpenBLAS-0.3.27
+          make -j$(nproc) \
+            CC="$TOOLCHAIN/bin/aarch64-linux-android29-clang" \
+            AR="$TOOLCHAIN/bin/llvm-ar" \
+            RANLIB="$TOOLCHAIN/bin/llvm-ranlib" \
+            HOSTCC=gcc \
+            TARGET=ARMV8 \
+            ONLY_CBLAS=1 \
+            BUILD_SHARED_LIBS=ON \
+            BUILD_STATIC_LIBS=OFF \
+            NOFORTRAN=1 \
+            NO_LAPACK=1 \
+            BINARY=64 \
+            PREFIX=$(pwd)/../install_root
+          make install PREFIX=$(pwd)/../install_root
+          cd ..
+
+      - name: Prepare output
+        run: |
+          mkdir -p OpenBlas/lib OpenBlas/include
+          for f in install_root/lib/*.so; do [ -f "$f" ] || continue; cp -v "$f" OpenBlas/lib/; done
+          cp -rv install_root/include/* OpenBlas/include/ 2>/dev/null || true
+          echo "=== OpenBLAS structure ==="
+          find OpenBlas -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A OpenBlas/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "OpenBLAS 0.3.27 - Android arm64 API 29"
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            git fetch origin master
+            git rebase FETCH_HEAD
+            git push
+          fi

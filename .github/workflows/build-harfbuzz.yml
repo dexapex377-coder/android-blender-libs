@@ -1,0 +1,103 @@
+name: Build Harfbuzz for Android
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '**/*.md'
+
+jobs:
+  build-harfbuzz:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Build Harfbuzz
+        run: |
+          set -e
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64"
+          API=29
+          CC="$TOOLCHAIN/bin/aarch64-linux-android${API}-clang"
+          CXX="$TOOLCHAIN/bin/aarch64-linux-android${API}-clang++"
+          AR="$TOOLCHAIN/bin/llvm-ar"
+          STRIP="$TOOLCHAIN/bin/llvm-strip"
+
+          curl -L https://github.com/harfbuzz/harfbuzz/releases/download/8.3.0/harfbuzz-8.3.0.tar.xz | tar xJ
+
+          # Create meson cross file
+          cat > android_arm64.txt << 'EOF'
+[binaries]
+c = '$CC'
+cpp = '$CXX'
+ar = '$AR'
+strip = '$STRIP'
+
+[host_machine]
+system = 'android'
+cpu_family = 'aarch64'
+cpu = 'arm64-v8a'
+endian = 'little'
+EOF
+          # Actually write proper cross file with resolved paths
+          cat > android_arm64.txt << CROSS
+[binaries]
+c = '${CC}'
+cpp = '${CXX}'
+ar = '${AR}'
+strip = '${STRIP}'
+
+[host_machine]
+system = 'android'
+cpu_family = 'aarch64'
+cpu = 'arm64-v8a'
+endian = 'little'
+CROSS
+
+          cd harfbuzz-8.3.0
+          meson setup build_android \
+            --cross-file ../android_arm64.txt \
+            --buildtype release \
+            --default-library shared \
+            -Dicu=disabled \
+            -Dcairo=disabled \
+            -Dfreetype=disabled \
+            -Dglib=disabled \
+            -Dgobject=disabled \
+            -Ddocs=disabled \
+            -Dtests=disabled \
+            -Dintrospection=disabled \
+            -Dprefix=$(pwd)/../install_root
+          meson compile -C build_android
+          meson install -C build_android
+          cd ..
+
+      - name: Prepare output
+        run: |
+          mkdir -p Harfbuzz/lib Harfbuzz/include
+          for f in install_root/lib/*.so; do [ -f "$f" ] || continue; cp -v "$f" Harfbuzz/lib/; done
+          cp -rv install_root/include/* Harfbuzz/include/ 2>/dev/null || true
+          echo "=== Harfbuzz structure ==="
+          find Harfbuzz -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A Harfbuzz/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Harfbuzz 8.3.0 - Android arm64 API 29"
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            git fetch origin master
+            git rebase FETCH_HEAD
+            git push
+          fi

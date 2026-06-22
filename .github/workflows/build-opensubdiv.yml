@@ -1,0 +1,77 @@
+name: Build OpenSubdiv for Android
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '**/*.md'
+
+jobs:
+  build-opensubdiv:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Build OpenSubdiv
+        run: |
+          set -e
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
+
+          curl -L https://github.com/PixarAnimationStudios/OpenSubdiv/archive/refs/tags/v3_7_0.tar.gz | tar xz
+
+          cmake -B build_osd -S OpenSubdiv-3_7_0 \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-29 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DNO_EXAMPLES=ON \
+            -DNO_TUTORIALS=ON \
+            -DNO_REGRESSION=ON \
+            -DNO_TESTS=ON \
+            -DNO_DOC=ON \
+            -DNO_OMP=ON \
+            -DNO_TBB=ON \
+            -DNO_CUDA=ON \
+            -DNO_OPENCL=ON \
+            -DNO_OPENGL=ON \
+            -DNO_PTEX=ON \
+            -DNO_GLEW_GLX=ON \
+            -DNO_CLEW=ON \
+            -DNO_GLFW=ON \
+            -DCMAKE_INSTALL_PREFIX=install_root
+
+          ninja -C build_osd -j$(nproc)
+          ninja -C build_osd install
+
+      - name: Prepare output
+        run: |
+          mkdir -p OpenSubdiv/lib OpenSubdiv/include
+          for f in install_root/lib/*.so; do [ -f "$f" ] || continue; cp -v "$f" OpenSubdiv/lib/; done
+          cp -rv install_root/include/* OpenSubdiv/include/ 2>/dev/null || true
+          echo "=== OpenSubdiv structure ==="
+          find OpenSubdiv -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A OpenSubdiv/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "OpenSubdiv 3.7.0 - Android arm64 API 29"
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            git fetch origin master
+            git rebase FETCH_HEAD
+            git push
+          fi

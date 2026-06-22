@@ -1,0 +1,85 @@
+name: Build CPython for Android
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '**/*.md'
+
+jobs:
+  build-cpython:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Build CPython
+        run: |
+          set -e
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64"
+          SYSROOT="$TOOLCHAIN/sysroot"
+          API=29
+
+          # Download Python source
+          curl -L https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz | tar xz
+
+          # Build host Python first (needed for cross compile)
+          cd Python-3.11.9
+          ./configure --prefix=$(pwd)/../host_python --disable-modules
+          make -j$(nproc)
+          make install
+          cd ..
+
+          # Cross-compile for Android using some tricks
+          mkdir -p android_build
+          cd android_build
+
+          export CC="$TOOLCHAIN/bin/aarch64-linux-android${API}-clang"
+          export CXX="$TOOLCHAIN/bin/aarch64-linux-android${API}-clang++"
+          export AR="$TOOLCHAIN/bin/llvm-ar"
+          export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
+          export PATH=$(pwd)/../host_python/bin:$PATH
+
+          # Python uses autotools-like configure
+          ../Python-3.11.9/configure \
+            --host=aarch64-linux-android \
+            --build=x86_64-linux-gnu \
+            --prefix=$(pwd)/../install_root \
+            --disable-ipv6 \
+            --enable-shared \
+            --without-ensurepip \
+            ac_cv_file__dev_ptmx=no \
+            ac_cv_file__dev_ptc=no \
+            ac_cv_have_long_long_format=yes \
+            ac_cv_buggy_getaddrinfo=no
+
+          make -j$(nproc) || make -j1
+          make install
+          cd ..
+
+      - name: Prepare output
+        run: |
+          mkdir -p cpython/lib cpython/include
+          for f in install_root/lib/*.so; do [ -f "$f" ] || continue; cp -v "$f" cpython/lib/; done
+          for f in install_root/lib/python3.11/lib-dynload/*.so; do [ -f "$f" ] || continue; cp -v "$f" cpython/lib/; done
+          cp -rv install_root/include/python3.11/* cpython/include/ 2>/dev/null || true
+          echo "=== CPython structure ==="
+          find cpython -type f | head -20
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A cpython/
+          if git diff --cached --quiet; then echo "No changes"; else
+            git commit -m "CPython 3.11.9 - Android arm64 API 29"
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            git fetch origin master && git rebase FETCH_HEAD && git push
+          fi

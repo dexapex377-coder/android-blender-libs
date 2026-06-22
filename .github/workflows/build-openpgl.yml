@@ -1,0 +1,74 @@
+name: Build OpenPGL for Android
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '**/*.md'
+
+jobs:
+  build-openpgl:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Build OpenPGL
+        run: |
+          set -e
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN_CMAKE="$NDK_DIR/build/cmake/android.toolchain.cmake"
+          SYSROOT="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+
+          # Need TBB from our own build
+          # We'll use LIB_DIR pointing to the repo checkout
+          LIB_DIR=$(pwd)
+
+          curl -L https://github.com/OpenPathGuidingLibrary/openpgl/archive/refs/tags/v0.7.1.tar.gz | tar xz
+
+          cmake -B build_pgl -S openpgl-0.7.1 \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_CMAKE" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-29 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DOPENPGL_BUILD_STATIC=OFF \
+            -DOPENPGL_BUILD_TOOLS=OFF \
+            -DOPENPGL_BUILD_CHECK_TOOL=OFF \
+            -DOPENPGL_EF_RADIANCE_CACHES=OFF \
+            -DOPENPGL_EF_IMAGE_SPACE_GUIDING_BUFFER=OFF \
+            -DTBB_ROOT_DIR="$LIB_DIR/Tbb" \
+            -DCMAKE_INSTALL_PREFIX=install_root
+
+          ninja -C build_pgl -j$(nproc)
+          ninja -C build_pgl install
+
+      - name: Prepare output
+        run: |
+          mkdir -p Openpgl/lib Openpgl/include
+          for f in install_root/lib/*.so; do [ -f "$f" ] || continue; cp -v "$f" Openpgl/lib/; done
+          cp -rv install_root/include/* Openpgl/include/ 2>/dev/null || true
+          echo "=== OpenPGL structure ==="
+          find Openpgl -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A Openpgl/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "OpenPGL 0.7.1 - Android arm64 API 29"
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            git fetch origin master
+            git rebase FETCH_HEAD
+            git push
+          fi

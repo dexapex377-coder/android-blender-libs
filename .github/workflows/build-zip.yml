@@ -1,0 +1,75 @@
+name: Build libzip for Android
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '**/*.md'
+
+jobs:
+  build-zip:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Build libzip
+        run: |
+          set -e
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
+          SYSROOT="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+
+          ZLIB_PATH=$(find "$SYSROOT" -name "libz.so" -path "*/aarch64*" | head -1)
+          echo "ZLIB at: $ZLIB_PATH"
+
+          curl -L https://github.com/nih-at/libzip/releases/download/v1.11.4/libzip-1.11.4.tar.xz | tar xJ
+
+          cmake -B build_zip -S libzip-1.11.4 \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-29 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DENABLE_ZSTD=OFF \
+            -DENABLE_BZIP2=OFF \
+            -DBUILD_DOC=OFF \
+            -DBUILD_EXAMPLES=OFF \
+            -DBUILD_REGRESS=OFF \
+            -DBUILD_TOOLS=OFF \
+            -DZLIB_LIBRARY="$ZLIB_PATH" \
+            -DZLIB_INCLUDE_DIR="$SYSROOT/usr/include" \
+            -DCMAKE_INSTALL_PREFIX=install_root
+
+          ninja -C build_zip -j$(nproc)
+          ninja -C build_zip install
+
+      - name: Prepare output
+        run: |
+          mkdir -p Zip/lib Zip/include
+          cp -v install_root/lib/libzip.so Zip/lib/ 2>/dev/null || true
+          cp -rv install_root/include/* Zip/include/ 2>/dev/null || true
+          echo "=== Zip structure ==="
+          find Zip -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A Zip/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "libzip 1.11.4 - Android arm64 API 29"
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            git fetch origin master
+            git rebase FETCH_HEAD
+            git push
+          fi

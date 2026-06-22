@@ -1,0 +1,43 @@
+name: Build Boost for Android
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '**/*.md'
+
+jobs:
+  build-boost:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Prepare Boost headers
+        run: |
+          set -e
+          # Boost headers only - download and extract
+          curl -L https://github.com/boostorg/boost/releases/download/boost-1.71.0/boost_1_71_0.tar.gz | tar xz
+          mkdir -p boost/boost_1_71_0
+          cp -rv boost_1_71_0/boost boost/boost_1_71_0/
+          echo "=== Boost structure ==="
+          find boost -type d -maxdepth 3 | head -20
+          echo "..."
+          find boost -name "*.hpp" | wc -l
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A boost/
+          if git diff --cached --quiet; then echo "No changes"; else
+            git commit -m "Boost 1.71.0 headers - Android arm64"
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            git fetch origin master && git rebase FETCH_HEAD && git push
+          fi

@@ -1,0 +1,73 @@
+name: Build Alembic for Android
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '**/*.md'
+
+jobs:
+  build-alembic:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Build Alembic
+        run: |
+          set -e
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
+          SYSROOT="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+
+          curl -L https://github.com/alembic/alembic/archive/refs/tags/1.8.11.tar.gz | tar xz
+
+          cmake -B build_abc -S alembic-1.8.11 \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-29 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DUSE_BINARIES=OFF \
+            -DUSE_EXAMPLES=OFF \
+            -DUSE_TESTS=OFF \
+            -DUSE_HDF5=OFF \
+            -DUSE_PYALEMBIC=OFF \
+            -DUSE_ARNOLD=OFF \
+            -DUSE_MAYA=OFF \
+            -DUSE_PRMAN=OFF \
+            -DALEMBIC_SHARED_LIBS=ON \
+            -DCMAKE_INSTALL_PREFIX=install_root
+
+          ninja -C build_abc -j$(nproc) || ninja -C build_abc -j1
+          ninja -C build_abc install 2>/dev/null || true
+          # Alembic might not have an install target, collect manually
+          mkdir -p install_root/lib install_root/include
+          find build_abc -name "*.so" -exec cp -v {} install_root/lib/ \;
+          cp -rv alembic-1.8.11/include/* install_root/include/ 2>/dev/null || true
+
+      - name: Prepare output
+        run: |
+          mkdir -p Alembic/lib Alembic/include
+          for f in install_root/lib/*.so; do [ -f "$f" ] || continue; cp -v "$f" Alembic/lib/; done
+          for f in install_root/lib/*.a; do [ -f "$f" ] || continue; cp -v "$f" Alembic/lib/; done
+          cp -rv install_root/include/* Alembic/include/ 2>/dev/null || true
+          echo "=== Alembic structure ==="
+          find Alembic -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A Alembic/
+          if git diff --cached --quiet; then echo "No changes"; else
+            git commit -m "Alembic 1.8.11 - Android arm64 API 29"
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            git fetch origin master && git rebase FETCH_HEAD && git push
+          fi
