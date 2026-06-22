@@ -28,6 +28,8 @@ jobs:
         run: |
           curl -L https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.2.1.tar.gz -o openexr.tar.gz
           tar xzf openexr.tar.gz
+          # Remove test directory to avoid CMake errors with BUILD_TOOLS=OFF
+          rm -rf openexr-3.2.1/src/test
 
       - name: Build OpenEXR for Android
         run: |
@@ -42,7 +44,6 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=ON \
             -DOPENEXR_BUILD_TOOLS=OFF \
-            -DOPENEXR_BUILD_TESTS=OFF \
             -DOPENEXR_INSTALL=ON \
             -DCMAKE_INSTALL_PREFIX=install_root
           
