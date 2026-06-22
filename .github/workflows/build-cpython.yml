@@ -52,6 +52,7 @@ jobs:
             --host=aarch64-linux-android \
             --build=x86_64-linux-gnu \
             --prefix=$(pwd)/../install_root \
+            --with-build-python=$(pwd)/../host_python/bin/python3 \
             --disable-ipv6 \
             --enable-shared \
             --without-ensurepip \

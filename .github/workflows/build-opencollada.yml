@@ -38,6 +38,7 @@ jobs:
             -DUSE_STATIC=OFF \
             -DUSE_SHARED=ON \
             -DUSE_LIBXML=ON \
+            -DCMAKE_POLICY_DEFAULT_CMP0021=NEW \
             -DCMAKE_SKIP_INSTALL_ALL_DEPENDENCY=ON \
             -DCMAKE_INSTALL_PREFIX=install_root
 

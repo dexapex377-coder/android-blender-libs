@@ -27,6 +27,8 @@ jobs:
 
           curl -L https://github.com/embree/embree/archive/refs/tags/v4.3.3.tar.gz | tar xz
 
+          LIB_DIR=$(pwd)
+
           cmake -B build_embree -S embree-4.3.3 \
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
@@ -38,6 +40,9 @@ jobs:
             -DEMBREE_TUTORIALS=OFF \
             -DEMBREE_TESTING=OFF \
             -DEMBREE_MAX_ISA=NEON \
+            -DTBB_ROOT_DIR="$LIB_DIR/Tbb" \
+            -DTBB_INCLUDE_DIR="$LIB_DIR/Tbb/include" \
+            -DTBB_LIBRARY="$LIB_DIR/Tbb/lib/libtbb.so" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_embree -j$(nproc) || ninja -C build_embree -j1

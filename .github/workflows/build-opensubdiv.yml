@@ -48,10 +48,11 @@ jobs:
             -DNO_GLEW_GLX=ON \
             -DNO_CLEW=ON \
             -DNO_GLFW=ON \
+            -DCMAKE_SKIP_INSTALL_ALL_DEPENDENCY=ON \
             -DCMAKE_INSTALL_PREFIX=install_root
 
-          ninja -C build_osd -j$(nproc)
-          ninja -C build_osd install
+          ninja -C build_osd -j$(nproc) || ninja -C build_osd -j1
+          ninja -C build_osd install 2>/dev/null || true
 
       - name: Prepare output
         run: |

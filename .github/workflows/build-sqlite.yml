@@ -29,8 +29,10 @@ jobs:
           CC="$TOOLCHAIN/bin/aarch64-linux-android${API}-clang"
           AR="$TOOLCHAIN/bin/llvm-ar"
 
-          curl -L https://github.com/sqlite/sqlite/archive/refs/tags/version-3.46.0.tar.gz | tar xz
-          cd sqlite-version-3.46.0
+          # SQLite amalgamation - download from sqlite.org (not GitHub, which lacks sqlite3.c)
+          curl -L https://www.sqlite.org/2024/sqlite-amalgamation-3460000.zip -o sqlite.zip
+          unzip -o sqlite.zip
+          cd sqlite-amalgamation-3460000
 
           $CC -O2 -fPIC \
             -DSQLITE_THREADSAFE=1 \
@@ -43,9 +45,9 @@ jobs:
 
           cd ..
           mkdir -p install_root/lib install_root/include
-          cp sqlite-version-3.46.0/libsqlite3.so install_root/lib/
-          cp sqlite-version-3.46.0/sqlite3.h install_root/include/
-          cp sqlite-version-3.46.0/sqlite3ext.h install_root/include/
+          cp sqlite-amalgamation-3460000/libsqlite3.so install_root/lib/
+          cp sqlite-amalgamation-3460000/sqlite3.h install_root/include/
+          cp sqlite-amalgamation-3460000/sqlite3ext.h install_root/include/
 
       - name: Prepare output
         run: |

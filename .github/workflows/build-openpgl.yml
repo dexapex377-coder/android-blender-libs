@@ -45,6 +45,8 @@ jobs:
             -DOPENPGL_EF_RADIANCE_CACHES=OFF \
             -DOPENPGL_EF_IMAGE_SPACE_GUIDING_BUFFER=OFF \
             -DTBB_ROOT_DIR="$LIB_DIR/Tbb" \
+            -DTBB_INCLUDE_DIR="$LIB_DIR/Tbb/include" \
+            -DTBB_LIBRARY="$LIB_DIR/Tbb/lib/libtbb.so" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_pgl -j$(nproc)
