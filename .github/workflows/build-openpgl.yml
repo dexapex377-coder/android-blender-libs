@@ -30,9 +30,6 @@ jobs:
           # We'll use LIB_DIR pointing to the repo checkout
           LIB_DIR=$(pwd)
 
-          # Create tbb_stddef.h compat header for oneTBB (FindTBB.cmake checks for this)
-          echo '#include <tbb/version.h>' > Tbb/include/tbb/tbb_stddef.h
-
           curl -L https://github.com/OpenPathGuidingLibrary/openpgl/archive/refs/tags/v0.7.1.tar.gz | tar xz
 
           cmake -B build_pgl -S openpgl-0.7.1 \
@@ -48,11 +45,6 @@ jobs:
             -DOPENPGL_EF_RADIANCE_CACHES=OFF \
             -DOPENPGL_EF_IMAGE_SPACE_GUIDING_BUFFER=OFF \
             -DTBB_ROOT="$LIB_DIR/Tbb" \
-            -DTBB_ROOT_DIR="$LIB_DIR/Tbb" \
-            -DTBB_INCLUDE_DIR="$LIB_DIR/Tbb/include" \
-            -DTBB_LIBRARY="$LIB_DIR/Tbb/lib/libtbb.so" \
-            -DTBB_LIBRARY_DIR="$LIB_DIR/Tbb/lib" \
-            -DTBB_VERSION_FILE="$LIB_DIR/Tbb/include/tbb/version.h" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_pgl -j$(nproc)

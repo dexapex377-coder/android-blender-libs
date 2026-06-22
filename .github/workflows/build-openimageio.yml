@@ -58,7 +58,8 @@ jobs:
             -DZLIB_INCLUDE_DIR="$SYSROOT/usr/include" \
             -DImath_DIR="$LIB_DIR/IMath/lib/cmake/Imath" \
             -DImath_ROOT="$LIB_DIR/IMath" \
-            -DCMAKE_PREFIX_PATH="$LIB_DIR/IMath:$LIB_DIR/boost/boost_1_71_0" \
+            -DOpenEXR_ROOT="$LIB_DIR/OpenExr" \
+            -DCMAKE_PREFIX_PATH="$LIB_DIR/IMath:$LIB_DIR/OpenExr:$LIB_DIR/boost/boost_1_71_0" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_oii -j$(nproc) || ninja -C build_oii -j1

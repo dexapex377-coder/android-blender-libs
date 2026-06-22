@@ -26,12 +26,14 @@ jobs:
           TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
           LIB_DIR=$(pwd)
 
-          curl -L https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/v12.0.0.tar.gz | tar xz
+          curl -L https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/v10.0.1.tar.gz | tar xz
+          # Patch OpenVDB cmake to accept our Boost version
+          sed -i 's/set(OPENVDB_MINIMUM_BOOST_VERSION.*)/set(OPENVDB_MINIMUM_BOOST_VERSION "1.71")/' openvdb-10.0.1/CMakeLists.txt 2>/dev/null || true
 
           # OpenVDB needs Boost - create compat header for oneTBB
           echo '#include <tbb/version.h>' > Tbb/include/tbb/tbb_stddef.h
 
-          cmake -B build_vdb -S openvdb-12.0.0 \
+          cmake -B build_vdb -S openvdb-10.0.1 \
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
             -DANDROID_ABI=arm64-v8a \
@@ -62,7 +64,7 @@ jobs:
           ninja -C build_vdb -j$(nproc) || ninja -C build_vdb -j1
           mkdir -p install_root/lib install_root/include
           find build_vdb -name "*.so" -exec cp -v {} install_root/lib/ \;
-          cp -rv openvdb-12.0.0/openvdb install_root/include/ 2>/dev/null || true
+          cp -rv openvdb-10.0.1/openvdb install_root/include/ 2>/dev/null || true
 
       - name: Prepare output
         run: |

@@ -28,8 +28,6 @@ jobs:
           curl -L https://github.com/embree/embree/archive/refs/tags/v4.3.3.tar.gz | tar xz
 
           LIB_DIR=$(pwd)
-          # Create tbb_stddef.h compat header for oneTBB
-          echo '#include <tbb/version.h>' > Tbb/include/tbb/tbb_stddef.h
 
           cmake -B build_embree -S embree-4.3.3 \
             -G Ninja \
@@ -43,11 +41,6 @@ jobs:
             -DEMBREE_TESTING=OFF \
             -DEMBREE_MAX_ISA=NEON \
             -DTBB_ROOT="$LIB_DIR/Tbb" \
-            -DTBB_ROOT_DIR="$LIB_DIR/Tbb" \
-            -DTBB_INCLUDE_DIR="$LIB_DIR/Tbb/include" \
-            -DTBB_LIBRARY="$LIB_DIR/Tbb/lib/libtbb.so" \
-            -DTBB_LIBRARY_DIR="$LIB_DIR/Tbb/lib" \
-            -DTBB_VERSION_FILE="$LIB_DIR/Tbb/include/tbb/version.h" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_embree -j$(nproc) || ninja -C build_embree -j1

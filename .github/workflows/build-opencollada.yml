@@ -43,6 +43,8 @@ jobs:
             -DUSE_STATIC=OFF \
             -DUSE_SHARED=ON \
             -DUSE_LIBXML=ON \
+            -DUSE_COLLADA_VALIDATOR=OFF \
+            -DUSE_DAE_VALIDATOR=OFF \
             -DCMAKE_POLICY_DEFAULT_CMP0021=OLD \
             -DCMAKE_POLICY_DEFAULT_CMP0054=OLD \
             -DCMAKE_SKIP_INSTALL_ALL_DEPENDENCY=ON \

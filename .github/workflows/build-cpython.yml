@@ -27,16 +27,12 @@ jobs:
           SYSROOT="$TOOLCHAIN/sysroot"
           API=29
 
-          # Install host tools (readelf is needed for cross-build configure)
-          sudo apt-get update && sudo apt-get install -y binutils
-          # Also use NDK's llvm-readelf as readelf
-          export READELF="$TOOLCHAIN/bin/llvm-readelf"
-
-          # Download Python source
+          # Download Python source twice (host build dirties the source tree)
           curl -L https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz | tar xz
+          cp -a Python-3.11.9 Python-host-3.11.9
 
           # Build host Python first (needed for cross compile)
-          cd Python-3.11.9
+          cd Python-host-3.11.9
           ./configure --prefix=$(pwd)/../host_python --disable-modules
           make -j$(nproc)
           make install
@@ -51,6 +47,7 @@ jobs:
           export AR="$TOOLCHAIN/bin/llvm-ar"
           export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
           export PATH=$(pwd)/../host_python/bin:$PATH
+          export READELF="$TOOLCHAIN/bin/llvm-readelf"
 
           # Python uses autotools-like configure
           ../Python-3.11.9/configure \
