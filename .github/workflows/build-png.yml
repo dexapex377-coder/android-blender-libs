@@ -61,6 +61,7 @@ jobs:
           mkdir -p Png/lib Png/include
 
           for f in install_root/lib/*.so; do
+            [ -f "$f" ] || continue
             "$STRIP" -s "$f"
             cp -v "$f" Png/lib/
           done

@@ -59,6 +59,7 @@ jobs:
           mkdir -p Tbb/lib Tbb/include
 
           for f in install_root/lib/*.so; do
+            [ -f "$f" ] || continue
             "$STRIP" -s "$f"
             cp -v "$f" Tbb/lib/
           done

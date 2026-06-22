@@ -58,6 +58,7 @@ jobs:
           mkdir -p OpenAL/lib OpenAL/include
 
           for f in install_root/lib/*.so; do
+            [ -f "$f" ] || continue
             "$STRIP" -s "$f"
             cp -v "$f" OpenAL/lib/
           done

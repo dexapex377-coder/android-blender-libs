@@ -63,6 +63,7 @@ jobs:
           mkdir -p FreeType/lib FreeType/include
 
           for f in install_root/lib/*.so; do
+            [ -f "$f" ] || continue
             "$STRIP" -s "$f"
             cp -v "$f" FreeType/lib/
           done

@@ -58,6 +58,7 @@ jobs:
           mkdir -p Brotli/lib Brotli/include
 
           for f in install_root/lib/*.so; do
+            [ -f "$f" ] || continue
             "$STRIP" -s "$f"
             cp -v "$f" Brotli/lib/
           done
