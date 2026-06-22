@@ -69,5 +69,5 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "Blosc 1.21.5 - Android arm64 API 29"
-            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git pull --rebase && git push
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git fetch origin master && git rebase FETCH_HEAD && git push
           fi

@@ -57,11 +57,9 @@ jobs:
 
       - name: Prepare output
         run: |
-          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
-          mkdir -p Epoxy/lib Epoxy/include
-          find libepoxy-1.5.10/install_root -name '*.a' -exec cp -v {} Epoxy/lib/ \;
-          find libepoxy-1.5.10/install_root -name '*.h' -exec cp -v --parents {} Epoxy/include/ \; 2>/dev/null || true
-          find libepoxy-1.5.10/install_root/include -type f -exec cp -v {} Epoxy/include/ \; 2>/dev/null || true
+          mkdir -p Epoxy/lib Epoxy/include/epoxy
+          cp -v libepoxy-1.5.10/install_root/lib/libepoxy.a Epoxy/lib/
+          cp -v libepoxy-1.5.10/install_root/include/epoxy/*.h Epoxy/include/epoxy/
           echo "=== Epoxy structure ==="
           find Epoxy -type f
 
@@ -73,5 +71,5 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git pull --rebase && git push
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git fetch origin master && git rebase FETCH_HEAD && git push
           fi

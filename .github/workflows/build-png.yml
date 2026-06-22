@@ -36,6 +36,8 @@ jobs:
           NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
           TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
           SYSROOT="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+          ZLIB_PATH=$(find "$SYSROOT" -name "libz.so" -path "*/aarch64*" | head -1)
+          echo "ZLIB at: $ZLIB_PATH"
 
           cmake -B build_png -S libpng-1.6.43 \
             -G Ninja \
@@ -46,7 +48,7 @@ jobs:
             -DPNG_SHARED=ON \
             -DPNG_STATIC=OFF \
             -DPNG_TESTS=OFF \
-            -DZLIB_LIBRARY=-lz \
+            -DZLIB_LIBRARY="$ZLIB_PATH" \
             -DZLIB_INCLUDE_DIR="$SYSROOT/usr/include" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
@@ -79,5 +81,5 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "PNG libpng 1.6.43 - Android arm64 API 29"
-            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git pull --rebase && git push
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git fetch origin master && git rebase FETCH_HEAD && git push
           fi

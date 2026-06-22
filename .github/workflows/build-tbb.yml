@@ -46,6 +46,7 @@ jobs:
             -DTBB_TEST=OFF \
             -DTBB_EXAMPLES=OFF \
             -DTBB_STRICT=OFF \
+            -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=gold" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_tbb -j$(nproc)
@@ -79,5 +80,5 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "TBB oneTBB 2021.11.0 - Android arm64 API 29"
-            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git pull --rebase && git push
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git fetch origin master && git rebase FETCH_HEAD && git push
           fi
