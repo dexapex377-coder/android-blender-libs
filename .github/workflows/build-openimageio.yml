@@ -29,6 +29,9 @@ jobs:
 
           curl -L https://github.com/AcademySoftwareFoundation/OpenImageIO/archive/refs/tags/v3.1.14.0.tar.gz | tar xz
 
+          # Create tbb_stddef.h compat header for oneTBB (though USE_TBB=OFF)
+          echo '#include <tbb/version.h>' > Tbb/include/tbb/tbb_stddef.h
+
           cmake -B build_oii -S OpenImageIO-3.1.14.0 \
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
@@ -45,8 +48,12 @@ jobs:
             -DUSE_FFMPEG=OFF \
             -DUSE_OPENGL=OFF \
             -DUSE_TBB=OFF \
+            -DUSE_FREETYPE=OFF \
+            -DUSE_LIBCPLUSPLUS=OFF \
             -DZLIB_LIBRARY="$SYSROOT/usr/lib/aarch64-linux-android/29/libz.so" \
             -DZLIB_INCLUDE_DIR="$SYSROOT/usr/include" \
+            -DImath_ROOT="$LIB_DIR/IMath" \
+            -DCMAKE_PREFIX_PATH="$LIB_DIR/IMath" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_oii -j$(nproc) || ninja -C build_oii -j1

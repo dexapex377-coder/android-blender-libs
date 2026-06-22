@@ -28,6 +28,9 @@ jobs:
 
           curl -L https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/v12.0.0.tar.gz | tar xz
 
+          # OpenVDB needs Boost - create compat header for oneTBB
+          echo '#include <tbb/version.h>' > Tbb/include/tbb/tbb_stddef.h
+
           cmake -B build_vdb -S openvdb-12.0.0 \
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
@@ -50,6 +53,9 @@ jobs:
             -DUSE_BLOSC=ON \
             -DBlosc_ROOT="$LIB_DIR/blosc" \
             -DTBB_ROOT_DIR="$LIB_DIR/Tbb" \
+            -DBoost_INCLUDE_DIR="$LIB_DIR/Boost/include" \
+            -DBoost_NO_BOOST_CMAKE=ON \
+            -DBoost_NO_SYSTEM_PATHS=ON \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_vdb -j$(nproc) || ninja -C build_vdb -j1

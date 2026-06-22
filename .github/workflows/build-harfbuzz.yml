@@ -32,34 +32,16 @@ jobs:
 
           curl -L https://github.com/harfbuzz/harfbuzz/releases/download/8.3.0/harfbuzz-8.3.0.tar.xz | tar xJ
 
-          # Create meson cross file
-          cat > android_arm64.txt << 'EOF'
-[binaries]
-c = '$CC'
-cpp = '$CXX'
-ar = '$AR'
-strip = '$STRIP'
-
-[host_machine]
-system = 'android'
-cpu_family = 'aarch64'
-cpu = 'arm64-v8a'
-endian = 'little'
-EOF
-          # Actually write proper cross file with resolved paths
-          cat > android_arm64.txt << CROSS
-[binaries]
-c = '${CC}'
-cpp = '${CXX}'
-ar = '${AR}'
-strip = '${STRIP}'
-
-[host_machine]
-system = 'android'
-cpu_family = 'aarch64'
-cpu = 'arm64-v8a'
-endian = 'little'
-CROSS
+          printf '[binaries]\n' > android_arm64.txt
+          printf "c = '%s'\n" "$CC" >> android_arm64.txt
+          printf "cpp = '%s'\n" "$CXX" >> android_arm64.txt
+          printf "ar = '%s'\n" "$AR" >> android_arm64.txt
+          printf "strip = '%s'\n" "$STRIP" >> android_arm64.txt
+          printf '\n[host_machine]\n' >> android_arm64.txt
+          printf "system = 'android'\n" >> android_arm64.txt
+          printf "cpu_family = 'aarch64'\n" >> android_arm64.txt
+          printf "cpu = 'arm64-v8a'\n" >> android_arm64.txt
+          printf "endian = 'little'\n" >> android_arm64.txt
 
           cd harfbuzz-8.3.0
           meson setup build_android \

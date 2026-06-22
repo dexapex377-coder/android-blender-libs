@@ -28,6 +28,8 @@ jobs:
           curl -L https://github.com/embree/embree/archive/refs/tags/v4.3.3.tar.gz | tar xz
 
           LIB_DIR=$(pwd)
+          # Create tbb_stddef.h compat header for oneTBB
+          echo '#include <tbb/version.h>' > Tbb/include/tbb/tbb_stddef.h
 
           cmake -B build_embree -S embree-4.3.3 \
             -G Ninja \

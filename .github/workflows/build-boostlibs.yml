@@ -37,17 +37,16 @@ jobs:
           ./bootstrap.sh --with-toolset=clang
 
           # Create user-config.jam
-          cat > user-config.jam << JAM
-using clang : arm64 : $TOOLCHAIN/bin/aarch64-linux-android${API}-clang++
-:
-<archiver>$TOOLCHAIN/bin/llvm-ar
-<ranlib>$TOOLCHAIN/bin/llvm-ranlib
-<compileflags>--target=aarch64-linux-android${API}
-<compileflags>-fPIC
-<compileflags>-std=c++17
-<linkflags>-fuse-ld=lld
-;
-JAM
+          printf "using clang : arm64 : %s/bin/aarch64-linux-android%s-clang++\n" \
+            "$TOOLCHAIN" "$API" > user-config.jam
+          printf ":\n" >> user-config.jam
+          printf "<archiver>%s/bin/llvm-ar\n" "$TOOLCHAIN" >> user-config.jam
+          printf "<ranlib>%s/bin/llvm-ranlib\n" "$TOOLCHAIN" >> user-config.jam
+          printf "<compileflags>--target=aarch64-linux-android%s\n" "$API" >> user-config.jam
+          printf "<compileflags>-fPIC\n" >> user-config.jam
+          printf "<compileflags>-std=c++17\n" >> user-config.jam
+          printf "<linkflags>-fuse-ld=lld\n" >> user-config.jam
+          printf ";\n" >> user-config.jam
 
           # Build only the needed libs (disable python since we don't have cpython yet)
           ./b2 -q -j$(nproc) \

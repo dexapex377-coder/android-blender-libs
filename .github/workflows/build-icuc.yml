@@ -54,10 +54,10 @@ jobs:
             --enable-tests=no \
             --enable-samples=no \
             --enable-tools=no \
-            --with-data-packaging=archive \
+            --with-data-packaging=files \
             --prefix=$(pwd)/../install_root
 
-          make -j$(nproc)
+          make -j$(nproc) || make -j1
           make install
           cd ..
 

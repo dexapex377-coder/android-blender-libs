@@ -46,8 +46,9 @@ jobs:
           mkdir -p IMath/lib IMath/include
           for f in install_root/lib/*.so; do [ -f "$f" ] || continue; cp -v "$f" IMath/lib/; done
           cp -rv install_root/include/* IMath/include/ 2>/dev/null || true
-          # Also copy cmake config
-          cp -rv install_root/lib/cmake IMath/ 2>/dev/null || true
+          # Copy cmake config to the right location for find_package
+          mkdir -p IMath/lib/cmake
+          cp -rv install_root/lib/cmake/Imath* IMath/lib/cmake/ 2>/dev/null || true
           echo "=== IMath structure ==="
           find IMath -type f | head -15
 

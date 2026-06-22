@@ -27,6 +27,10 @@ jobs:
 
           curl -L https://github.com/OpenImageDenoise/oidn/releases/download/v2.3.2/oidn-2.3.2.src.tar.gz | tar xz
 
+          LIB_DIR=$(pwd)
+          # Create tbb_stddef.h compat header for oneTBB
+          echo '#include <tbb/version.h>' > Tbb/include/tbb/tbb_stddef.h
+
           cmake -B build_oidn -S oidn-2.3.2 \
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
@@ -35,7 +39,8 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=ON \
             -DOIDN_API_NAMESPACE=oidn \
-            -DTBB_ROOT_DIR="" \
+            -DTBB_ROOT="$LIB_DIR/Tbb" \
+            -DTBB_ROOT_DIR="$LIB_DIR/Tbb" \
             -DOIDN_BUILD_TOOLS=OFF \
             -DOIDN_BUILD_TESTS=OFF \
             -DCMAKE_INSTALL_PREFIX=install_root

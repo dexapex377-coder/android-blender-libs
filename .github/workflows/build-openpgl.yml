@@ -30,6 +30,9 @@ jobs:
           # We'll use LIB_DIR pointing to the repo checkout
           LIB_DIR=$(pwd)
 
+          # Create tbb_stddef.h compat header for oneTBB (FindTBB.cmake checks for this)
+          echo '#include <tbb/version.h>' > Tbb/include/tbb/tbb_stddef.h
+
           curl -L https://github.com/OpenPathGuidingLibrary/openpgl/archive/refs/tags/v0.7.1.tar.gz | tar xz
 
           cmake -B build_pgl -S openpgl-0.7.1 \

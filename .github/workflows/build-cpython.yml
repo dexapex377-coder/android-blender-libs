@@ -27,6 +27,9 @@ jobs:
           SYSROOT="$TOOLCHAIN/sysroot"
           API=29
 
+          # Install host tools (readelf is needed for cross-build configure)
+          sudo apt-get update && sudo apt-get install -y binutils
+
           # Download Python source
           curl -L https://www.python.org/ftp/python/3.11.9/Python-3.11.9.tgz | tar xz
 

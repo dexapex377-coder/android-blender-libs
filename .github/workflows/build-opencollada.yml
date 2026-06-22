@@ -28,6 +28,10 @@ jobs:
 
           curl -L https://github.com/KhronosGroup/OpenCOLLADA/archive/refs/tags/v1.6.68.tar.gz | tar xz
 
+          # Patch CMakeLists.txt files to set CMP0021 NEW
+          sed -i '1i cmake_policy(SET CMP0021 NEW)' OpenCOLLADA-1.6.68/GeneratedSaxParser/CMakeLists.txt
+          sed -i '1i cmake_policy(SET CMP0021 NEW)' OpenCOLLADA-1.6.68/COLLADASaxFrameworkLoader/CMakeLists.txt
+
           cmake -B build_ocollada -S OpenCOLLADA-1.6.68 \
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
