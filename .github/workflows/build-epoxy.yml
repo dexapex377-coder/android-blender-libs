@@ -71,5 +71,5 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git fetch origin master && git rebase FETCH_HEAD && git push
+            git commit -m "Epoxy for Android (API 29)" && git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git fetch origin master && git rebase FETCH_HEAD && git push
           fi
