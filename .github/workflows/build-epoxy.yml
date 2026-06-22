@@ -73,5 +73,5 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git push
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git pull --rebase && git push
           fi
