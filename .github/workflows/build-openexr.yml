@@ -3,7 +3,7 @@ name: Build OpenEXR for Android
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [master]
 
 env:
   NDK_VERSION: r26d
