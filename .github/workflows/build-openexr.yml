@@ -42,6 +42,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=ON \
             -DOPENEXR_BUILD_TOOLS=OFF \
+            -DOPENEXR_BUILD_TESTS=OFF \
             -DOPENEXR_INSTALL=ON \
             -DCMAKE_INSTALL_PREFIX=install_root
           
