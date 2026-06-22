@@ -1,0 +1,80 @@
+name: Build TBB for Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+env:
+  NDK_VERSION: r26d
+
+jobs:
+  build-tbb:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: false
+
+      - name: Install deps
+        run: sudo apt-get install -y cmake ninja-build
+
+      - name: Download oneTBB source
+        run: |
+          curl -L https://github.com/oneapi-src/oneTBB/archive/refs/tags/v2021.11.0.tar.gz -o tbb.tar.gz
+          tar xzf tbb.tar.gz
+
+      - name: Build TBB for Android
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
+
+          cmake -B build_tbb -S oneTBB-2021.11.0 \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-29 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DTBB_TEST=OFF \
+            -DTBB_EXAMPLES=OFF \
+            -DTBB_STRICT=OFF \
+            -DCMAKE_INSTALL_PREFIX=install_root
+
+          ninja -C build_tbb -j$(nproc)
+          ninja -C build_tbb install
+
+      - name: Strip and prepare output
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          STRIP="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
+
+          mkdir -p Tbb/lib Tbb/include
+
+          for f in install_root/lib/*.so; do
+            "$STRIP" -s "$f"
+            cp -v "$f" Tbb/lib/
+          done
+          cp -rv install_root/include/* Tbb/include/ 2>/dev/null || true
+          # oneTBB puts headers in include/onednn, check for tbb subdir
+          cp -rv install_root/include/tbb* Tbb/include/ 2>/dev/null || true
+
+          echo "=== TBB structure ==="
+          find Tbb -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A Tbb/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "TBB oneTBB 2021.11.0 - Android arm64 API 29"
+            git push
+          fi
