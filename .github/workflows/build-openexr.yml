@@ -28,7 +28,6 @@ jobs:
         run: |
           curl -L https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.2.1.tar.gz -o openexr.tar.gz
           tar xzf openexr.tar.gz
-          # Remove test and patch CMakeLists to avoid building test tools
           rm -rf openexr-3.2.1/src/test
           sed -i '/add_subdirectory.*src\/test/d' openexr-3.2.1/CMakeLists.txt
 
@@ -36,7 +35,7 @@ jobs:
         run: |
           NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
           TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
-          
+
           cmake -B build_openexr -S openexr-3.2.1 \
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
@@ -47,20 +46,38 @@ jobs:
             -DOPENEXR_BUILD_TOOLS=OFF \
             -DOPENEXR_INSTALL=ON \
             -DCMAKE_INSTALL_PREFIX=install_root
-          
+
           ninja -C build_openexr -j$(nproc)
           ninja -C build_openexr install
 
-      - name: List output
+      - name: Strip and prepare output
         run: |
-          echo "=== IlmThread ==="
-          find install_root -name "*IlmThread*" -o -name "*IlmThread*" 2>/dev/null
-          echo "=== All libs ==="
-          find install_root -name "*.so" -exec ls -lh {} \;
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          STRIP="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: openexr-android-arm64
-          path: install_root/lib/*.so
-          retention-days: 30
+          mkdir -p OpenExr/lib OpenExr/include/OpenEXR
+
+          # Strip and copy .so files
+          for f in install_root/lib/*.so; do
+            "$STRIP" -s "$f"
+            cp -v "$f" OpenExr/lib/
+          done
+
+          # Copy headers
+          cp -rv install_root/include/OpenEXR/* OpenExr/include/OpenEXR/
+          cp -rv install_root/include/Imath/* OpenExr/include/Imath/ 2>/dev/null || true
+
+          echo "=== OpenExr structure ==="
+          find OpenExr -type f | sort
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A OpenExr/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "OpenEXR 3.2.1 - Android arm64 API 29"
+            git push
+          fi
