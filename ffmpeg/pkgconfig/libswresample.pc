@@ -1,0 +1,14 @@
+prefix=/home/runner/work/android-blender-libs/android-blender-libs/ffmpeg-7.0.2/../install_root
+exec_prefix=${prefix}
+libdir=/home/runner/work/android-blender-libs/android-blender-libs/ffmpeg-7.0.2/../install_root/lib
+includedir=/home/runner/work/android-blender-libs/android-blender-libs/ffmpeg-7.0.2/../install_root/include
+
+Name: libswresample
+Description: FFmpeg audio resampling library
+Version: 5.1.100
+Requires: 
+Requires.private: libavutil >= 59.8.100
+Conflicts:
+Libs: -L${libdir}  -lswresample 
+Libs.private: -lm -latomic
+Cflags: -I${includedir}
