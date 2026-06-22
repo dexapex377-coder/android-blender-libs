@@ -1,0 +1,63 @@
+name: Build IMath for Android
+
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
+      - '**/*.md'
+
+jobs:
+  build-imath:
+    runs-on: ubuntu-latest
+    permissions: write-all
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        id: setup-ndk
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r26d
+
+      - name: Build IMath
+        run: |
+          set -e
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
+
+          curl -L https://github.com/AcademySoftwareFoundation/Imath/archive/refs/tags/v3.1.11.tar.gz | tar xz
+
+          cmake -B build_imath -S Imath-3.1.11 \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-29 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DIMATH_BUILD_TESTS=OFF \
+            -DIMATH_BUILD_DOCS=OFF \
+            -DCMAKE_INSTALL_PREFIX=install_root
+
+          ninja -C build_imath -j$(nproc)
+          ninja -C build_imath install
+
+      - name: Prepare output
+        run: |
+          mkdir -p IMath/lib IMath/include
+          for f in install_root/lib/*.so; do [ -f "$f" ] || continue; cp -v "$f" IMath/lib/; done
+          cp -rv install_root/include/* IMath/include/ 2>/dev/null || true
+          # Also copy cmake config
+          cp -rv install_root/lib/cmake IMath/ 2>/dev/null || true
+          echo "=== IMath structure ==="
+          find IMath -type f | head -15
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A IMath/
+          if git diff --cached --quiet; then echo "No changes"; else
+            git commit -m "IMath 3.1.11 - Android arm64 API 29"
+            git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+            git fetch origin master && git rebase FETCH_HEAD && git push
+          fi

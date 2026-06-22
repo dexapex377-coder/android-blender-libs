@@ -27,7 +27,7 @@ jobs:
           API=29
 
           # Download Boost source
-          curl -L https://github.com/boostorg/boost/releases/download/boost-1.71.0/boost_1_71_0.tar.gz | tar xz
+          curl -L https://archives.boost.io/release/1.71.0/source/boost_1_71_0.tar.gz | tar xz
           cd boost_1_71_0
 
           # Patch common.jam for NDK clang compat

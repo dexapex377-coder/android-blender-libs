@@ -23,7 +23,7 @@ jobs:
         run: |
           set -e
           # Boost headers only - download and extract
-          curl -L https://github.com/boostorg/boost/releases/download/boost-1.71.0/boost_1_71_0.tar.gz | tar xz
+          curl -L https://archives.boost.io/release/1.71.0/source/boost_1_71_0.tar.gz | tar xz
           mkdir -p boost/boost_1_71_0
           cp -rv boost_1_71_0/boost boost/boost_1_71_0/
           echo "=== Boost structure ==="

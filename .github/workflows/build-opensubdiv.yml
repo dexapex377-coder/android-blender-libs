@@ -48,6 +48,7 @@ jobs:
             -DNO_GLEW_GLX=ON \
             -DNO_CLEW=ON \
             -DNO_GLFW=ON \
+            -DCMAKE_POLICY_DEFAULT_CMP0021=NEW \
             -DCMAKE_SKIP_INSTALL_ALL_DEPENDENCY=ON \
             -DCMAKE_INSTALL_PREFIX=install_root
 

@@ -41,7 +41,7 @@ jobs:
             -DSQLITE_ENABLE_JSON1 \
             -DSQLITE_ENABLE_COLUMN_METADATA \
             -DSQLITE_ENABLE_UNLOCK_NOTIFY \
-            -shared -o libsqlite3.so sqlite3.c -ldl -lpthread
+            -shared -o libsqlite3.so sqlite3.c -ldl
 
           cd ..
           mkdir -p install_root/lib install_root/include
