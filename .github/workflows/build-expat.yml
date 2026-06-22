@@ -8,6 +8,8 @@ on:
 env:
   NDK_VERSION: r26d
 
+permissions: write-all
+
 jobs:
   build-expat:
     runs-on: ubuntu-latest
@@ -28,6 +30,7 @@ jobs:
         run: |
           curl -L https://github.com/libexpat/libexpat/archive/refs/tags/R_2_6_2.tar.gz -o expat.tar.gz
           tar xzf expat.tar.gz
+          ls -la
 
       - name: Build Expat for Android
         run: |

@@ -8,6 +8,8 @@ on:
 env:
   NDK_VERSION: r26d
 
+permissions: write-all
+
 jobs:
   build-epoxy:
     runs-on: ubuntu-latest
@@ -22,39 +24,44 @@ jobs:
           add-to-path: false
 
       - name: Install deps
-        run: sudo apt-get install -y cmake ninja-build
+        run: sudo apt-get install -y cmake ninja-build python3-pip meson
 
       - name: Download Epoxy source
         run: |
           curl -L https://github.com/anholt/libepoxy/archive/refs/tags/1.5.10.tar.gz -o epoxy.tar.gz
           tar xzf epoxy.tar.gz
+          ls -la
 
       - name: Build Epoxy for Android
         run: |
           NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
-          TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
+          TOOLCHAIN="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64"
+          export CC="$TOOLCHAIN/bin/aarch64-linux-android29-clang"
+          export CXX="$TOOLCHAIN/bin/aarch64-linux-android29-clang++"
+          export AR="$TOOLCHAIN/bin/llvm-ar"
+          export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
+          export PKG_CONFIG_LIBDIR="$TOOLCHAIN/sysroot/usr/lib/aarch64-linux-android"
 
-          cmake -B build_epoxy -S libepoxy-1.5.10 \
-            -G Ninja \
-            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
-            -DANDROID_ABI=arm64-v8a \
-            -DANDROID_PLATFORM=android-29 \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_SHARED_LIBS=OFF \
-            -DBUILD_STATIC=ON \
-            -DEPOXY_BUILD_TESTS=OFF \
-            -DEPOXY_BUILD_EGL=ON \
-            -DEPOXY_BUILD_GLX=OFF \
-            -DCMAKE_INSTALL_PREFIX=install_root
-
+          cd libepoxy-1.5.10
+          meson setup build_epoxy \
+            --cross-file /dev/null \
+            -Dprefix=$PWD/install_root \
+            -Dbuildtype=release \
+            -Dglx=no \
+            -Degl=yes \
+            -Dtests=false \
+            -Ddefault_library=static
           ninja -C build_epoxy -j$(nproc)
           ninja -C build_epoxy install
+          cd ..
 
       - name: Prepare output
         run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
           mkdir -p Epoxy/lib Epoxy/include
-          cp -v install_root/lib/libepoxy.a Epoxy/lib/
-          cp -rv install_root/include/* Epoxy/include/ 2>/dev/null || true
+          find libepoxy-1.5.10/install_root -name '*.a' -exec cp -v {} Epoxy/lib/ \;
+          find libepoxy-1.5.10/install_root -name '*.h' -exec cp -v --parents {} Epoxy/include/ \; 2>/dev/null || true
+          find libepoxy-1.5.10/install_root/include -type f -exec cp -v {} Epoxy/include/ \; 2>/dev/null || true
           echo "=== Epoxy structure ==="
           find Epoxy -type f
 
@@ -66,6 +73,5 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes to commit"
           else
-            git commit -m "Epoxy 1.5.10 - Android arm64 API 29 (EGL only)"
             git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git && git push
           fi

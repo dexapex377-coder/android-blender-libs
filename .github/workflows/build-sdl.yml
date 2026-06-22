@@ -8,6 +8,8 @@ on:
 env:
   NDK_VERSION: r26d
 
+permissions: write-all
+
 jobs:
   build-sdl:
     runs-on: ubuntu-latest

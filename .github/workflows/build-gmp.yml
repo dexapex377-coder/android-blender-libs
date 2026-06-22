@@ -8,6 +8,8 @@ on:
 env:
   NDK_VERSION: r26d
 
+permissions: write-all
+
 jobs:
   build-gmp:
     runs-on: ubuntu-latest
