@@ -36,6 +36,9 @@ jobs:
           NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
           TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
 
+          # Remove version script def files (Linux-specific, break lld on Android)
+          find oneTBB-2021.11.0 -name "*.def" -exec rm -v {} \;
+
           cmake -B build_tbb -S oneTBB-2021.11.0 \
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
@@ -46,7 +49,6 @@ jobs:
             -DTBB_TEST=OFF \
             -DTBB_EXAMPLES=OFF \
             -DTBB_STRICT=OFF \
-            -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=gold" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_tbb -j$(nproc)
