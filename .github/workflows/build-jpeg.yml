@@ -1,0 +1,69 @@
+name: Build JPEG for Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+env:
+  NDK_VERSION: r26d
+
+jobs:
+  build-jpeg:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: false
+
+      - name: Install deps
+        run: sudo apt-get install -y cmake ninja-build
+
+      - name: Download libjpeg-turbo source
+        run: |
+          curl -L https://github.com/libjpeg-turbo/libjpeg-turbo/archive/refs/tags/3.0.1.tar.gz -o jpeg.tar.gz
+          tar xzf jpeg.tar.gz
+
+      - name: Build JPEG for Android
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
+
+          cmake -B build_jpeg -S libjpeg-turbo-3.0.1 \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-29 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DENABLE_SHARED=OFF \
+            -DENABLE_STATIC=ON \
+            -DWITH_SIMD=ON \
+            -DCMAKE_INSTALL_PREFIX=install_root
+
+          ninja -C build_jpeg -j$(nproc)
+          ninja -C build_jpeg install
+
+      - name: Prepare output
+        run: |
+          mkdir -p JPEG/lib JPEG/include
+          cp -v install_root/lib/libjpeg.a JPEG/lib/
+          cp -v install_root/include/*.h JPEG/include/
+          echo "=== JPEG structure ==="
+          find JPEG -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A JPEG/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "JPEG libjpeg-turbo 3.0.1 - Android arm64 API 29"
+            git push
+          fi

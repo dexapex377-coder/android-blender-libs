@@ -1,0 +1,64 @@
+name: Build BZip2 for Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+env:
+  NDK_VERSION: r26d
+
+jobs:
+  build-bzip2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: false
+
+      - name: Download BZip2 source
+        run: |
+          curl -L https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz -o bzip2.tar.gz
+          tar xzf bzip2.tar.gz
+
+      - name: Build BZip2 for Android
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64"
+          CC="$TOOLCHAIN/bin/aarch64-linux-android29-clang"
+          AR="$TOOLCHAIN/bin/llvm-ar"
+          RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
+
+          cd bzip2-1.0.8
+          make -j$(nproc) \
+            CC="$CC" \
+            AR="$AR" \
+            RANLIB="$RANLIB" \
+            CFLAGS="-O2 -fPIC -D_FILE_OFFSET_BITS=64" \
+            libbz2.a
+          cd ..
+
+      - name: Prepare output
+        run: |
+          mkdir -p BZip2/lib BZip2/include
+          cp -v bzip2-1.0.8/libbz2.a BZip2/lib/
+          cp -v bzip2-1.0.8/bzlib.h BZip2/include/
+          echo "=== BZip2 structure ==="
+          find BZip2 -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A BZip2/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "BZip2 1.0.8 - Android arm64 API 29"
+            git push
+          fi

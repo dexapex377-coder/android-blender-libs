@@ -1,0 +1,77 @@
+name: Build OpenAL for Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+env:
+  NDK_VERSION: r26d
+
+jobs:
+  build-openal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: false
+
+      - name: Install deps
+        run: sudo apt-get install -y cmake ninja-build
+
+      - name: Download OpenAL source
+        run: |
+          curl -L https://github.com/kcat/openal-soft/archive/refs/tags/1.23.1.tar.gz -o openal.tar.gz
+          tar xzf openal.tar.gz
+
+      - name: Build OpenAL for Android
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
+
+          cmake -B build_openal -S openal-soft-1.23.1 \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-29 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DALSOFT_EXAMPLES=OFF \
+            -DALSOFT_TESTS=OFF \
+            -DALSOFT_UTILS=OFF \
+            -DCMAKE_INSTALL_PREFIX=install_root
+
+          ninja -C build_openal -j$(nproc)
+          ninja -C build_openal install
+
+      - name: Strip and prepare output
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          STRIP="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
+
+          mkdir -p OpenAL/lib OpenAL/include
+
+          for f in install_root/lib/*.so; do
+            "$STRIP" -s "$f"
+            cp -v "$f" OpenAL/lib/
+          done
+          cp -rv install_root/include/* OpenAL/include/
+
+          echo "=== OpenAL structure ==="
+          find OpenAL -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A OpenAL/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "OpenAL Soft 1.23.1 - Android arm64 API 29"
+            git push
+          fi

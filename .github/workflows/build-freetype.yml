@@ -1,0 +1,82 @@
+name: Build FreeType for Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+env:
+  NDK_VERSION: r26d
+
+jobs:
+  build-freetype:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: false
+
+      - name: Install deps
+        run: sudo apt-get install -y cmake ninja-build
+
+      - name: Download FreeType source
+        run: |
+          curl -L https://github.com/freetype/freetype/archive/refs/tags/VER-2-13-2.tar.gz -o freetype.tar.gz
+          tar xzf freetype.tar.gz
+
+      - name: Build FreeType for Android
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
+          SYSROOT="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+
+          cmake -B build_ft -S freetype-VER-2-13-2 \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-29 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DFT_DISABLE_ZLIB=OFF \
+            -DFT_DISABLE_PNG=ON \
+            -DFT_DISABLE_HARFBUZZ=ON \
+            -DFT_DISABLE_BROTLI=ON \
+            -DFT_DISABLE_BZIP2=ON \
+            -DZLIB_LIBRARY=-lz \
+            -DZLIB_INCLUDE_DIR="$SYSROOT/usr/include" \
+            -DCMAKE_INSTALL_PREFIX=install_root
+
+          ninja -C build_ft -j$(nproc)
+          ninja -C build_ft install
+
+      - name: Strip and prepare output
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          STRIP="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
+
+          mkdir -p FreeType/lib FreeType/include
+
+          for f in install_root/lib/*.so; do
+            "$STRIP" -s "$f"
+            cp -v "$f" FreeType/lib/
+          done
+          cp -rv install_root/include/* FreeType/include/
+
+          echo "=== FreeType structure ==="
+          find FreeType -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A FreeType/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "FreeType 2.13.2 - Android arm64 API 29 (zlib only)"
+            git push
+          fi

@@ -1,0 +1,72 @@
+name: Build GMP for Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+env:
+  NDK_VERSION: r26d
+
+jobs:
+  build-gmp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: false
+
+      - name: Install deps
+        run: sudo apt-get install -y m4
+
+      - name: Download GMP source
+        run: |
+          curl -L https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz -o gmp.tar.xz
+          tar xf gmp.tar.xz
+
+      - name: Build GMP for Android
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64"
+          SYSROOT="$TOOLCHAIN/sysroot"
+          export CC="$TOOLCHAIN/bin/aarch64-linux-android29-clang"
+          export CXX="$TOOLCHAIN/bin/aarch64-linux-android29-clang++"
+          export AR="$TOOLCHAIN/bin/llvm-ar"
+          export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
+          export CFLAGS="-O2 -fPIC"
+          export CXXFLAGS="-O2 -fPIC"
+
+          cd gmp-6.3.0
+          ./configure --host=aarch64-linux-android \
+            --prefix=$PWD/install_root \
+            --disable-shared --enable-static \
+            --enable-cxx=yes
+          make -j$(nproc)
+          make install
+          cd ..
+
+      - name: Prepare output
+        run: |
+          mkdir -p GMP/lib GMP/include
+          cp -v gmp-6.3.0/install_root/lib/libgmp.a GMP/lib/
+          cp -v gmp-6.3.0/install_root/lib/libgmpxx.a GMP/lib/ 2>/dev/null || true
+          cp -v gmp-6.3.0/install_root/include/*.h GMP/include/
+          echo "=== GMP structure ==="
+          find GMP -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A GMP/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "GMP 6.3.0 - Android arm64 API 29"
+            git push
+          fi

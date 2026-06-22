@@ -1,0 +1,78 @@
+name: Build Expat for Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+env:
+  NDK_VERSION: r26d
+
+jobs:
+  build-expat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: false
+
+      - name: Install deps
+        run: sudo apt-get install -y cmake ninja-build
+
+      - name: Download Expat source
+        run: |
+          curl -L https://github.com/libexpat/libexpat/archive/refs/tags/R_2_6_2.tar.gz -o expat.tar.gz
+          tar xzf expat.tar.gz
+
+      - name: Build Expat for Android
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
+
+          cmake -B build_expat -S libexpat-R_2_6_2/expat \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-29 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DEXPAT_BUILD_TOOLS=OFF \
+            -DEXPAT_BUILD_TESTS=OFF \
+            -DEXPAT_BUILD_EXAMPLES=OFF \
+            -DCMAKE_INSTALL_PREFIX=install_root
+
+          ninja -C build_expat -j$(nproc)
+          ninja -C build_expat install
+
+      - name: Strip and prepare output
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          STRIP="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
+
+          mkdir -p Expat/lib Expat/include
+
+          for f in install_root/lib/*.so; do
+            "$STRIP" -s "$f"
+            cp -v "$f" Expat/lib/
+          done
+          cp -rv install_root/include/* Expat/include/
+
+          echo "=== Expat structure ==="
+          find Expat -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A Expat/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Expat 2.6.2 - Android arm64 API 29"
+            git push
+          fi

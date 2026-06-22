@@ -1,0 +1,73 @@
+name: Build TIFF for Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+env:
+  NDK_VERSION: r26d
+
+jobs:
+  build-tiff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: false
+
+      - name: Install deps
+        run: sudo apt-get install -y cmake ninja-build
+
+      - name: Download libtiff source
+        run: |
+          curl -L https://download.osgeo.org/libtiff/tiff-4.6.0.tar.gz -o tiff.tar.gz
+          tar xzf tiff.tar.gz
+
+      - name: Build TIFF for Android
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
+          SYSROOT="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+
+          cmake -B build_tiff -S tiff-4.6.0 \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-29 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -Dtiff-tools=OFF \
+            -Dtiff-tests=OFF \
+            -Dtiff-docs=OFF \
+            -Djpeg=OFF \
+            -DZLIB_LIBRARY=-lz \
+            -DZLIB_INCLUDE_DIR="$SYSROOT/usr/include" \
+            -DCMAKE_INSTALL_PREFIX=install_root
+
+          ninja -C build_tiff -j$(nproc)
+          ninja -C build_tiff install
+
+      - name: Prepare output
+        run: |
+          mkdir -p TIFF/lib TIFF/include
+          cp -v install_root/lib/libtiff.a TIFF/lib/
+          cp -rv install_root/include/* TIFF/include/
+          echo "=== TIFF structure ==="
+          find TIFF -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A TIFF/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "TIFF libtiff 4.6.0 - Android arm64 API 29"
+            git push
+          fi

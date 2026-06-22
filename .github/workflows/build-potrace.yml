@@ -1,0 +1,63 @@
+name: Build Potrace for Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+
+env:
+  NDK_VERSION: r26d
+
+jobs:
+  build-potrace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: false
+
+      - name: Download Potrace source
+        run: |
+          curl -L https://potrace.sourceforge.net/download/1.16/potrace-1.16.tar.gz -o potrace.tar.gz
+          tar xzf potrace.tar.gz
+
+      - name: Build Potrace for Android
+        run: |
+          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
+          TOOLCHAIN="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64"
+          export CC="$TOOLCHAIN/bin/aarch64-linux-android29-clang"
+          export CFLAGS="-O2 -fPIC"
+
+          cd potrace-1.16
+          ./configure --host=aarch64-linux-android \
+            --prefix=$PWD/install_root \
+            --disable-shared --enable-static \
+            --with-libpotrace
+          make -j$(nproc)
+          make install
+          cd ..
+
+      - name: Prepare output
+        run: |
+          mkdir -p Potrace/lib Potrace/include
+          cp -v potrace-1.16/install_root/lib/libpotrace.a Potrace/lib/
+          cp -v potrace-1.16/install_root/include/*.h Potrace/include/
+          echo "=== Potrace structure ==="
+          find Potrace -type f
+
+      - name: Commit and push to repo
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A Potrace/
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Potrace 1.16 - Android arm64 API 29"
+            git push
+          fi
