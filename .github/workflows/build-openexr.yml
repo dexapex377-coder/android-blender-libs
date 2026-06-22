@@ -28,8 +28,9 @@ jobs:
         run: |
           curl -L https://github.com/AcademySoftwareFoundation/openexr/archive/refs/tags/v3.2.1.tar.gz -o openexr.tar.gz
           tar xzf openexr.tar.gz
-          # Remove test directory to avoid CMake errors with BUILD_TOOLS=OFF
+          # Remove test and patch CMakeLists to avoid building test tools
           rm -rf openexr-3.2.1/src/test
+          sed -i '/add_subdirectory.*src\/test/d' openexr-3.2.1/CMakeLists.txt
 
       - name: Build OpenEXR for Android
         run: |
