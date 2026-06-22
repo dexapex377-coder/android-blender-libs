@@ -36,12 +36,6 @@ jobs:
           NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
           TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
 
-          # Patch version script def files (Linux version scripts reference undefined symbols on Android)
-          # Replace with minimal valid script to avoid lld errors
-          for f in $(find oneTBB-2021.11.0 -name "*.def"); do
-            printf '{ local: *; };\n' > "$f"
-          done
-
           cmake -B build_tbb -S oneTBB-2021.11.0 \
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
@@ -52,6 +46,7 @@ jobs:
             -DTBB_TEST=OFF \
             -DTBB_EXAMPLES=OFF \
             -DTBB_STRICT=OFF \
+            -DTBB_COMMON_LINK_FLAGS="-Wl,--undefined-version" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_tbb -j$(nproc)
