@@ -36,8 +36,8 @@ jobs:
           NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
           TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
 
-          # Remove version script def files (Linux-specific, break lld on Android)
-          find oneTBB-2021.11.0 -name "*.def" -exec rm -v {} \;
+          # Empty version script def files (Linux version scripts break NDK lld linker)
+          for f in $(find oneTBB-2021.11.0 -name "*.def"); do : > "$f"; done
 
           cmake -B build_tbb -S oneTBB-2021.11.0 \
             -G Ninja \
