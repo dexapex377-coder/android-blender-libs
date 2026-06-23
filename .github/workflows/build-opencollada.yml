@@ -1,7 +1,6 @@
 name: Build OpenCOLLADA for Android
 
-on:
-  push:
+on: push
 
 jobs:
   build-opencollada:

@@ -1,10 +1,6 @@
 name: Build OpenImageIO for Android
 
-on:
-  push:
-    paths-ignore:
-      - 'README.md'
-      - '**/*.md'
+on: push
 
 jobs:
   build-openimageio:

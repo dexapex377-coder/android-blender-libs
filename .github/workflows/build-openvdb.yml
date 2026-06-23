@@ -74,11 +74,14 @@ jobs:
             -DBoost_INCLUDE_DIR="$LIB_DIR/boost/boost_1_71_0" \
             -DBoost_LIBRARY_DIR="$LIB_DIR/BoostIOStream/lib" \
             -DBoost_IOSTREAMS_LIBRARY="$LIB_DIR/BoostIOStream/lib/libboost_iostreams-mt-a64.so" \
-            -DBoost_NO_BOOST_CMAKE=ON \
-            -DBoost_NO_SYSTEM_PATHS=ON \
-            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
-            -DCMAKE_POLICY_DEFAULT_CMP0167=OLD \
-            -DCMAKE_INSTALL_PREFIX=install_root
+          -DBoost_NO_BOOST_CMAKE=ON \
+          -DBoost_NO_SYSTEM_PATHS=ON \
+          -DBoost_REGEX_LIBRARY_RELEASE="$LIB_DIR/BoostIOStream/lib/libboost_regex-mt-a64.so" \
+          -DBoost_USE_STATIC_LIBS=OFF \
+          -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
+          -DCMAKE_POLICY_DEFAULT_CMP0167=OLD \
+          -DCMAKE_POLICY_DEFAULT_CMP0168=OLD \
+          -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_vdb -j$(nproc) || ninja -C build_vdb -j1
           mkdir -p install_root/lib install_root/include
