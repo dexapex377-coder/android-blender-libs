@@ -38,7 +38,7 @@ jobs:
           cd potrace-1.16
           ./configure --host=aarch64-linux-android \
             --prefix=$PWD/install_root \
-            --disable-shared --enable-static \
+            --enable-shared --enable-static \
             --with-libpotrace
           make -j$(nproc)
           make install
@@ -47,7 +47,7 @@ jobs:
       - name: Prepare output
         run: |
           mkdir -p Potrace/lib Potrace/include
-          cp -v potrace-1.16/install_root/lib/libpotrace.a Potrace/lib/
+          cp -v potrace-1.16/install_root/lib/libpotrace.* Potrace/lib/
           cp -v potrace-1.16/install_root/include/*.h Potrace/include/
           echo "=== Potrace structure ==="
           find Potrace -type f
