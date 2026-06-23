@@ -94,9 +94,9 @@ jobs:
             cp -v install_root/lib/libicui18n.so install_root/lib/libicuuc.so install_root/lib/libicudata.so install_root/lib_combined/
             # Write a linker script as libicuc.so
             cat > install_root/lib_combined/libicuc.so << 'LSCRIPT'
-/* GNU ld linker script */
-GROUP ( libicui18n.so libicuuc.so libicudata.so )
-LSCRIPT
+            /* GNU ld linker script */
+            GROUP ( libicui18n.so libicuuc.so libicudata.so )
+            LSCRIPT
           fi
 
       - name: Prepare output
