@@ -2,9 +2,6 @@ name: Build OpenCOLLADA for Android
 
 on:
   push:
-    paths-ignore:
-      - 'README.md'
-      - '**/*.md'
 
 jobs:
   build-opencollada:
@@ -29,22 +26,17 @@ jobs:
 
           curl -L https://github.com/KhronosGroup/OpenCOLLADA/archive/refs/tags/v1.6.68.tar.gz | tar xz
 
-          # Patch CMakeLists.txt files to set CMP0021 OLD (allow install without DESTINATION)
           for f in COLLADABaseUtils GeneratedSaxParser COLLADASaxFrameworkLoader COLLADAFramework; do
             sed -i '1i cmake_policy(SET CMP0021 OLD)' OpenCOLLADA-1.6.68/$f/CMakeLists.txt 2>/dev/null || true
           done
 
-          # Patch root CMakeLists.txt: skip PCRE on Linux (not in NDK sysroot)
-          # File has CRLF line endings; convert to unix first, then patch, then convert back
           sed -i 's/\r$//' OpenCOLLADA-1.6.68/CMakeLists.txt
-          # Replace the entire find_package(PCRE) block with dummy variable sets
           sed -i '/^find_package(PCRE)$/,/^endif()$/c\
 set(PCRE_FOUND FALSE)\
 set(PCRE_INCLUDE_DIR "")\
 set(PCRE_LIBRARIES "")
 ' OpenCOLLADA-1.6.68/CMakeLists.txt
 
-          # Patch COLLADABaseUtils: avoid using empty PCRE vars in include/link
           sed -i 's/\${PCRE_INCLUDE_DIR}//g' OpenCOLLADA-1.6.68/COLLADABaseUtils/CMakeLists.txt
           sed -i 's/\${PCRE_LIBRARIES}//g' OpenCOLLADA-1.6.68/COLLADABaseUtils/CMakeLists.txt
 
@@ -70,7 +62,6 @@ set(PCRE_LIBRARIES "")
 
           ninja -C build_ocollada -j$(nproc) || ninja -C build_ocollada -j1
 
-          # Collect output manually
           mkdir -p install_root/lib install_root/include
           find build_ocollada -name "*.so" -exec cp -v {} install_root/lib/ \;
           cp -rv OpenCOLLADA-1.6.68/COLLADABaseUtils/include/* install_root/include/ 2>/dev/null || true
