@@ -81,7 +81,6 @@ PyAPI_FUNC(int) PyObject_IS_GC(PyObject *obj);
    // Kept for backward compatibility with Python 3.8
 #  define _PyGC_FINALIZED(o) PyObject_GC_IsFinalized(o)
 #endif
-#  define _PyGC_FINALIZED(o) PyObject_GC_IsFinalized(o)
 
 
 // Test if a type supports weak references
