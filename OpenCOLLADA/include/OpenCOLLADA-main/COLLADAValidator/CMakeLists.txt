@@ -21,7 +21,7 @@ set(libValidator_libs
 	OpenCOLLADAFramework
 	OpenCOLLADABaseUtils
 	MathMLSolver
-	${PCRE_LIBRARIES}
+	
 	${LIBXML2_LIBRARIES}
 	UTF
 )

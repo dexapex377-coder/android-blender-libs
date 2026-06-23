@@ -205,42 +205,34 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib CACHE INTERNAL "" FORCE )
 #-----------------------------------------------------------------------------
 # Set default config options
 
-option(USE_STATIC "Build static libraries"  OFF)
-option(USE_SHARED "Build shared libraries"  ON)
+option(USE_STATIC "Build static libraries"  ON)
+option(USE_SHARED "Build shared libraries"  OFF)
 option(USE_LIBXML "Use LibXml2 parser"      ON)
 option(USE_EXPAT  "Use expat parser"        OFF)
 option(USE_STATIC_MSVC_RUNTIME "Use static version of the MSVC run-time library" OFF)
-add_definitions(
-	-DGENERATEDSAXPARSER_XMLPARSER_LIBXML
-	-DXMLPARSER_LIBXML
-)
-#adding xml2
-#if (USE_LIBXML)
-#	add_definitions(
-#		-DGENERATEDSAXPARSER_XMLPARSER_LIBXML
-#		-DXMLPARSER_LIBXML
-#	)
-#	find_package(LibXml2)
-#	if (LIBXML2_FOUND)
-#		message(STATUS "SUCCESSFUL: LibXml2 found")
-#	else ()  # if xml2 not found building its local copy from ./Externals
-#		if (WIN32)
-#			message("WARNING: Native LibXml2 not found, taking LibXml from ./Externals")
-#			add_subdirectory(${EXTERNAL_LIBRARIES}/LibXML)
-#			set(LIBXML2_INCLUDE_DIR
-#				${libxml_include_dirs}
-#			)
-#			set(LIBXML2_LIBRARIES xml)
-#		else ()
-#			message("ERROR: LibXml2 not found, please install xml2 library (for Debian libxml2-dev)")
-#		endif ()
-#	endif ()
-#endif ()
 
-set(LIBXML2_INCLUDE_DIR
-		F:\\FreeProjects\\android\\OpenCOLLADA\\app\\src\\main\\cpp\\OpenCOLLADA-main\\Externals\\LibXML\\include\\
-)
-set(LIBXML2_LIBRARIES xml)
+#adding xml2
+if (USE_LIBXML)
+	add_definitions(
+		-DGENERATEDSAXPARSER_XMLPARSER_LIBXML
+		-DXMLPARSER_LIBXML
+	)
+	find_package(LibXml2)
+	if (LIBXML2_FOUND)
+		message(STATUS "SUCCESSFUL: LibXml2 found")
+	else ()  # if xml2 not found building its local copy from ./Externals
+		if (WIN32)
+			message("WARNING: Native LibXml2 not found, taking LibXml from ./Externals")
+			add_subdirectory(${EXTERNAL_LIBRARIES}/LibXML)
+			set(LIBXML2_INCLUDE_DIR
+				${libxml_include_dirs}
+			)
+			set(LIBXML2_LIBRARIES xml)
+		else ()
+			message("ERROR: LibXml2 not found, please install xml2 library (for Debian libxml2-dev)")
+		endif ()
+	endif ()
+endif ()
 
 if (USE_EXPAT)
 	add_definitions(-DGENERATEDSAXPARSER_XMLPARSER_EXPAT)
@@ -261,61 +253,3 @@ if(USE_STATIC_MSVC_RUNTIME)
 	endforeach()
 endif()
 
-#adding PCRE
-#find_package(PCRE)
-#if (PCRE_FOUND)
-#	message(STATUS "SUCCESSFUL: PCRE found")
-#else ()  # if pcre not found building its local copy from ./Externals
-#	if (WIN32 OR APPLE)
-#		message("WARNING: Native PCRE not found, taking PCRE from ./Externals")
-#		add_definitions(-DPCRE_STATIC)
-#		add_subdirectory(${EXTERNAL_LIBRARIES}/pcre)
-#		set(PCRE_INCLUDE_DIR ${libpcre_include_dirs})
-#		set(PCRE_LIBRARIES pcre)
-#	else ()
-#		message("ERROR: PCRE not found, please install pcre library")
-#	endif ()
-#endif ()
-
-set(PCRE_INCLUDE_DIR
-		F:\\FreeProjects\\android\\OpenCOLLADA\\app\\src\\main\\cpp\\OpenCOLLADA-main\\Externals\\pcre\\include\\)
-set(PCRE_LIBRARIES pcre)
-
-# building required libs
-add_subdirectory(common/libftoa)
-add_subdirectory(${EXTERNAL_LIBRARIES}/UTF)
-add_subdirectory(common/libBuffer)
-add_subdirectory(${EXTERNAL_LIBRARIES}/MathMLSolver)
-add_subdirectory(${EXTERNAL_LIBRARIES}/zlib)
-add_subdirectory(${EXTERNAL_LIBRARIES}/pcre)
-add_subdirectory(${EXTERNAL_LIBRARIES}/LibXML)
-
-# building OpenCOLLADA libs
-add_subdirectory(COLLADABaseUtils)
-add_subdirectory(COLLADAFramework)
-add_subdirectory(GeneratedSaxParser)
-add_subdirectory(COLLADASaxFrameworkLoader)
-add_subdirectory(COLLADAStreamWriter)
-
-## building COLLADAValidator app
-#add_subdirectory(COLLADAValidator)
-#
-## DAE validator app
-#add_subdirectory(DAEValidator)
-#
-## Library export
-#install(EXPORT LibraryExport DESTINATION ${OPENCOLLADA_INST_CMAKECONFIG} FILE OpenCOLLADATargets.cmake)
-#
-## Create the configuration files
-#include(CMakePackageConfigHelpers)
-#configure_package_config_file(OpenCOLLADAConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/OpenCOLLADAConfig.cmake
-#                              INSTALL_DESTINATION ${OPENCOLLADA_INST_CMAKECONFIG}
-#                              PATH_VARS OPENCOLLADA_INST_INCLUDE OPENCOLLADA_INST_CMAKECONFIG
-#                              NO_SET_AND_CHECK_MACRO NO_CHECK_REQUIRED_COMPONENTS_MACRO)
-#write_basic_package_version_file(${CMAKE_CURRENT_BINARY_DIR}/OpenCOLLADAConfigVersion.cmake
-#                                 VERSION ${OPENCOLLADA_VERSION}
-#                                 COMPATIBILITY SameMajorVersion)
-#
-## Install the configuration files
-#install(FILES ${CMAKE_CURRENT_BINARY_DIR}/OpenCOLLADAConfig.cmake ${CMAKE_CURRENT_BINARY_DIR}/OpenCOLLADAConfigVersion.cmake
-#        DESTINATION ${OPENCOLLADA_INST_CMAKECONFIG})

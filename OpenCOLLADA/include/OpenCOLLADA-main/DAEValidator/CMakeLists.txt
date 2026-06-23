@@ -45,7 +45,7 @@ set(DAEValidatorLibrarySources
 	library/include/no_warning_vector
 	library/include/no_warning_Windows.h
 	library/include/PathUtil.h
-	library/include/StringsImp.h
+	library/include/Strings.h
 	library/include/StringUtil.h
 	library/include/Uri.h
 	library/include/Xml.h

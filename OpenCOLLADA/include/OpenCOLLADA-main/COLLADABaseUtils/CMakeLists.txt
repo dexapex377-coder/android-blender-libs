@@ -1,3 +1,4 @@
+cmake_policy(SET CMP0021 OLD)
 set(name OpenCOLLADABaseUtils)
 project(${name})
 
@@ -54,13 +55,13 @@ set(SRC
 
 set(TARGET_LIBS
 	UTF
-	${PCRE_LIBRARIES}
+	
 )
 
 include_directories(
 	${libBaseUtils_include_dirs} 
 	${libUTF_include_dirs}
-	${PCRE_INCLUDE_DIR}
+	
 )
 
 opencollada_add_lib(${name} "${SRC}" "${TARGET_LIBS}")
