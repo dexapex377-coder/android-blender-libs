@@ -75,11 +75,11 @@ jobs:
 
           # Combine ICU libs into single libicuc.so (matching dshawshank)
           mkdir -p install_root/lib_combined
-          # .a files are in the build tree, not in install_root (make install only installs .so)
+          # .a files are in the android_build directory (make install installs .so only)
           $CC -shared -o install_root/lib_combined/libicuc.so \
-            -Wl,--whole-archive ../android_build/lib/libicui18n.a \
-            ../android_build/lib/libicuuc.a \
-            ../android_build/lib/libicudata.a \
+            -Wl,--whole-archive android_build/lib/libicui18n.a \
+            android_build/lib/libicuuc.a \
+            android_build/lib/libicudata.a \
             -Wl,--no-whole-archive \
             -ldl -lpthread
 
