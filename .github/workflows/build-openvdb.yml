@@ -31,6 +31,8 @@ jobs:
           sed -i 's/set(MINIMUM_BOOST_VERSION 1\.73)/set(MINIMUM_BOOST_VERSION 1.71)/' openvdb-10.0.1/cmake/config/OpenVDBVersions.cmake
 
           # OpenVDB needs Boost - compat header for oneTBB already handled by setting TBB_INCLUDE_DIR
+          # Patch Boost hash.hpp for C++17 compat (std::unary_function removed in C++17)
+          sed -i 's/struct hash_base : std::unary_function<T, std::size_t> {};/struct hash_base { typedef T argument_type; typedef std::size_t result_type; };/' "$LIB_DIR/boost/boost_1_71_0/boost/container_hash/hash.hpp"
 
           # Create stub Boost::regex library for FindBoost.cmake compatibility
           CXX="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
