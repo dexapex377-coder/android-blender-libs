@@ -95,7 +95,16 @@ jobs:
       - name: Prepare output
         run: |
           mkdir -p OpenVDB/lib OpenVDB/include
-          for f in install_root/lib/*.so; do [ -f "$f" ] || continue; cp -v "$f" OpenVDB/lib/; done
+          for f in install_root/lib/*.so; do
+            [ -f "$f" ] || continue
+            base=$(basename "$f")
+            cp -v "$f" "OpenVDB/lib/$base"
+            size=$(stat -c%s "OpenVDB/lib/$base" 2>/dev/null || stat -f%z "OpenVDB/lib/$base" 2>/dev/null)
+            if [ "$size" -gt 100000000 ]; then
+              echo "Compressing $base ($size bytes) with xz..."
+              xz -z "OpenVDB/lib/$base"
+            fi
+          done
           cp -rv install_root/include/* OpenVDB/include/ 2>/dev/null || true
           echo "=== OpenVDB structure ==="
           find OpenVDB -type f | head -10
