@@ -27,8 +27,8 @@ jobs:
           LIB_DIR=$(pwd)
 
           curl -L https://github.com/AcademySoftwareFoundation/openvdb/archive/refs/tags/v10.0.1.tar.gz | tar xz
-          # Patch OpenVDB cmake to accept our Boost version
-          sed -i 's/set(OPENVDB_MINIMUM_BOOST_VERSION.*)/set(OPENVDB_MINIMUM_BOOST_VERSION "1.71")/' openvdb-10.0.1/CMakeLists.txt 2>/dev/null || true
+          # Patch OpenVDB cmake to accept our Boost version (1.71 < 1.73 required)
+          sed -i 's/set(MINIMUM_BOOST_VERSION 1\.73)/set(MINIMUM_BOOST_VERSION 1.71)/' openvdb-10.0.1/cmake/config/OpenVDBVersions.cmake
 
           # OpenVDB needs Boost - create compat header for oneTBB
           echo '#include <tbb/version.h>' > Tbb/include/tbb/tbb_stddef.h
@@ -55,9 +55,12 @@ jobs:
             -DUSE_BLOSC=ON \
             -DBlosc_ROOT="$LIB_DIR/blosc" \
             -DTBB_ROOT_DIR="$LIB_DIR/Tbb" \
+            -DTBB_ROOT="$LIB_DIR/Tbb" \
+            -DTBB_DIR="$LIB_DIR/Tbb/lib/cmake/TBB" \
             -DBoost_INCLUDE_DIR="$LIB_DIR/boost/boost_1_71_0" \
             -DBoost_NO_BOOST_CMAKE=ON \
             -DBoost_NO_SYSTEM_PATHS=ON \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
             -DCMAKE_POLICY_DEFAULT_CMP0167=OLD \
             -DCMAKE_INSTALL_PREFIX=install_root
 
@@ -80,7 +83,7 @@ jobs:
           git config user.email "actions@github.com"
           git add -A OpenVDB/
           if git diff --cached --quiet; then echo "No changes"; else
-            git commit -m "OpenVDB 12.0.0 - Android arm64 API 29"
+            git commit -m "OpenVDB 10.0.1 - Android arm64 API 29"
             git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
             git fetch origin master && git rebase FETCH_HEAD && git push
           fi
