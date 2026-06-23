@@ -40,7 +40,6 @@ jobs:
             -DANDROID_PLATFORM=android-29 \
             -DCMAKE_BUILD_TYPE=Release \
             -DBUILD_SHARED_LIBS=ON \
-            -DOIDN_API_NAMESPACE=oidn \
             -DTBB_ROOT="$LIB_DIR/Tbb" \
             -DTBB_DIR="$LIB_DIR/Tbb/lib/cmake/TBB" \
             -DTBB_INCLUDE_DIR="$LIB_DIR/Tbb/include" \

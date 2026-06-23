@@ -63,6 +63,7 @@ jobs:
             -DJPEG_ROOT="$LIB_DIR/JPEG" \
             -DJPEG_INCLUDE_DIR="$LIB_DIR/JPEG/include" \
             -DJPEG_LIBRARY="$LIB_DIR/JPEG/lib/libjpeg.a" \
+            -Dlibjpeg-turbo_DIR="$LIB_DIR/JPEG/lib/cmake/libjpeg-turbo" \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH \
