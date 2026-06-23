@@ -48,6 +48,8 @@ jobs:
           export RANLIB="$TOOLCHAIN/bin/llvm-ranlib"
           export PATH=$(pwd)/../host_python/bin:$PATH
           export READELF="$TOOLCHAIN/bin/llvm-readelf"
+          # Need -fPIC for shared library linking (Android linker uses LLD which enforces PIC for .so)
+          export CFLAGS="-fPIC"
 
           # Python uses autotools-like configure
           ../Python-3.11.9/configure \
