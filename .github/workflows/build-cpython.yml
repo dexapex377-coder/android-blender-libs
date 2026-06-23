@@ -71,12 +71,18 @@ jobs:
 
       - name: Prepare output
         run: |
-          mkdir -p cpython/lib cpython/include
+          mkdir -p cpython/lib cpython/include/Include cpython/include/android/linux_arm64/pyconfig
           for f in install_root/lib/*.so; do [ -f "$f" ] || continue; cp -v "$f" cpython/lib/; done
           for f in install_root/lib/python3.11/lib-dynload/*.so; do [ -f "$f" ] || continue; cp -v "$f" cpython/lib/; done
-          cp -rv install_root/include/python3.11/* cpython/include/ 2>/dev/null || true
+          cp -rv install_root/include/python3.11/* cpython/include/Include/ 2>/dev/null || true
+          # Find pyconfig.h in build tree (cross-compile generates it)
+          pyconfig=$(find . -name pyconfig.h -path '*/android_build/*' 2>/dev/null | head -1)
+          if [ -n "$pyconfig" ]; then
+            cp -v "$pyconfig" cpython/include/
+            cp -v "$pyconfig" cpython/include/android/linux_arm64/pyconfig/
+          fi
           echo "=== CPython structure ==="
-          find cpython -type f | head -20
+          find cpython -type f | head -30
 
       - name: Commit and push to repo
         run: |
