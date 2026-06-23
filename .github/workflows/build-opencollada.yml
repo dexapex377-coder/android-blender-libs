@@ -34,9 +34,13 @@ jobs:
           done
 
           # Patch root CMakeLists.txt: skip PCRE on Linux (not in NDK sysroot)
-          # Replace the find_package(PCRE) section to set empty vars
-          sed -i 's/find_package(PCRE)/# PCRE disabled for Android\nset(PCRE_FOUND FALSE CACHE BOOL "PCRE found")\nset(PCRE_INCLUDE_DIR "" CACHE PATH "")\nset(PCRE_LIBRARIES "" CACHE STRING "")/' \
-            OpenCOLLADA-1.6.68/CMakeLists.txt
+          # Comment out the find_package(PCRE) call and set empty vars
+          sed -i '/find_package(PCRE)/{
+            a set(PCRE_FOUND FALSE)
+            a set(PCRE_INCLUDE_DIR "")
+            a set(PCRE_LIBRARIES "")
+            s/.*/if(ANDROID) # PCRE disabled for Android/
+          }' OpenCOLLADA-1.6.68/CMakeLists.txt
 
           # Patch COLLADABaseUtils: avoid using empty PCRE vars in include/link
           sed -i 's/\${PCRE_INCLUDE_DIR}//g' OpenCOLLADA-1.6.68/COLLADABaseUtils/CMakeLists.txt
@@ -52,8 +56,8 @@ jobs:
             -DUSE_STATIC=OFF \
             -DUSE_SHARED=ON \
             -DUSE_LIBXML=ON \
-            -DLIBXML2_INCLUDE_DIR="$SYSROOT/usr/include/libxml2" \
-            -DLIBXML2_LIBRARY="$SYSROOT/usr/lib/aarch64-linux-android/29/libxml2.so" \
+            -DLIBXML2_INCLUDE_DIR="$LIB_DIR/LibXML/include/libxml2" \
+            -DLIBXML2_LIBRARY="$LIB_DIR/LibXML/lib/libxml2.so" \
             -DUSE_COLLADA_VALIDATOR=OFF \
             -DUSE_DAE_VALIDATOR=OFF \
             -DUSE_PCRE=OFF \

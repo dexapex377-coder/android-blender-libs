@@ -60,6 +60,7 @@ jobs:
             -DImath_ROOT="$LIB_DIR/IMath" \
             -DOpenEXR_DIR="$LIB_DIR/OpenExr/lib/cmake/OpenEXR" \
             -DOpenEXR_ROOT="$LIB_DIR/OpenExr" \
+            -DJPEG_ROOT="$LIB_DIR/JPEG" \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
             -DCMAKE_PREFIX_PATH="$LIB_DIR/IMath:$LIB_DIR/OpenExr:$LIB_DIR/boost/boost_1_71_0" \
             -DCMAKE_INSTALL_PREFIX=install_root

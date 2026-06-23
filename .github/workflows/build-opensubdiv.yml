@@ -30,6 +30,9 @@ jobs:
           # Patch osd/CMakeLists.txt: fix install(FILES Android.mk) without DESTINATION
           # LIBRARY_OUTPUT_PATH_ROOT is not set by Android toolchain
           sed -i 's|${LIBRARY_OUTPUT_PATH_ROOT}|${CMAKE_INSTALL_PREFIX}|g' OpenSubdiv-3_7_0/opensubdiv/osd/CMakeLists.txt
+          # Patch root CMakeLists.txt: skip OSD_GPU when NO_OPENGL is set
+          # OpenGLES is found via NDK sysroot; set OSD_GPU=TRUE even when GPU is disabled
+          sed -i 's/if(OPENGLES_FOUND)/if(OPENGLES_FOUND AND NOT NO_OPENGL)/' OpenSubdiv-3_7_0/CMakeLists.txt
 
           cmake -B build_osd -S OpenSubdiv-3_7_0 \
             -G Ninja \
