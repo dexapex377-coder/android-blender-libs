@@ -59,15 +59,18 @@ jobs:
 
           make -j$(nproc) || make -j1
           # ICU data install doesn't create subdirectories under icudt68l/
-          # Create all needed subdirs by scanning build output after make completes
-          mkdir -p ../install_root/share/icu/68.1/icudt68l
+          # Try make install; if it fails due to missing dirs, manually copy remaining files
+          make install || true
           if [ -d "out/build/icudt68l" ]; then
-            find out/build/icudt68l -type d | while read d; do
-              target="../install_root/share/icu/68.1/${d#out/build/}"
-              mkdir -p "$target"
+            for f in $(find out/build/icudt68l -type f); do
+              rel="${f#out/build/}"
+              target="../install_root/share/icu/68.1/$rel"
+              if [ ! -f "$target" ]; then
+                mkdir -p "$(dirname "$target")"
+                cp -v "$f" "$target"
+              fi
             done
           fi
-          make install
           cd ..
 
           # Combine ICU libs into single libicuc.so (matching dshawshank)
