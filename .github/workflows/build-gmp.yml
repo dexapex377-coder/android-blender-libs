@@ -28,7 +28,7 @@ jobs:
 
       - name: Download GMP source
         run: |
-          curl -L https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz -o gmp.tar.xz
+          curl -L https://ftp.gnu.org/gnu/gmp/gmp-6.3.0.tar.xz -o gmp.tar.xz
           tar xf gmp.tar.xz
 
       - name: Build GMP for Android
