@@ -78,7 +78,7 @@ jobs:
           find build_oii -name "*.so" -exec cp -v {} install_root/lib/ \;
           cp -rv OpenImageIO-3.1.14.0/include/* install_root/include/ 2>/dev/null || true
           # Strip to reduce file size under GitHub's 100 MB limit
-          $TOOLCHAIN/bin/llvm-strip install_root/lib/*.so 2>/dev/null || true
+          aarch64-linux-android-strip install_root/lib/*.so 2>/dev/null || llvm-strip install_root/lib/*.so 2>/dev/null || strip install_root/lib/*.so || true
 
       - name: Prepare output
         run: |

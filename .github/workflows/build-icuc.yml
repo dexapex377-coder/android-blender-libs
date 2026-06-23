@@ -59,9 +59,14 @@ jobs:
 
           make -j$(nproc) || make -j1
           # ICU data install doesn't create subdirectories under icudt68l/
-          # Create all standard ICU data subdirs before install
-          mkdir -p ../install_root/share/icu/68.1/icudt68l \
-            ../install_root/share/icu/68.1/icudt68l/{brkitr,coll,lang,region,zone,unit,sprep,translit,rbnf,other}
+          # Create all needed subdirs by scanning build output after make completes
+          mkdir -p ../install_root/share/icu/68.1/icudt68l
+          if [ -d "out/build/icudt68l" ]; then
+            find out/build/icudt68l -type d | while read d; do
+              target="../install_root/share/icu/68.1/${d#out/build/}"
+              mkdir -p "$target"
+            done
+          fi
           make install
           cd ..
 
