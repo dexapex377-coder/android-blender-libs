@@ -79,6 +79,9 @@ jobs:
           # Preserve full source tree so FindOpenCOLLADA.cmake include paths work
           rm -rf OpenCOLLADA/include/OpenCOLLADA-main
           cp -rv OpenCOLLADA-1.6.68 OpenCOLLADA/include/OpenCOLLADA-main 2>/dev/null || true
+          # Patch OpenCOLLADA source for NDK r26d compatibility: tr1/unordered_map is removed in modern libc++
+          sed -i 's|#include <tr1/unordered_map>|#include <unordered_map>|g; s|#include <tr1/unordered_set>|#include <unordered_set>|g; s|std::tr1::unordered_map|std::unordered_map|g; s|std::tr1::unordered_multimap|std::unordered_multimap|g; s|std::tr1::unordered_set|std::unordered_set|g; s|std { namespace tr1|std|g; s|namespace tr1 }||g' \
+            OpenCOLLADA/include/OpenCOLLADA-main/COLLADABaseUtils/include/COLLADABUhash_map.h
           echo "=== OpenCOLLADA structure ==="
           find OpenCOLLADA -type f | head -30
 
