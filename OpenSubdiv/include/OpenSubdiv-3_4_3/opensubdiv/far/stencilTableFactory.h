@@ -1,8 +1,25 @@
 //
 //   Copyright 2013 Pixar
 //
-//   Licensed under the terms set forth in the LICENSE.txt file available at
-//   https://opensubdiv.org/license.
+//   Licensed under the Apache License, Version 2.0 (the "Apache License")
+//   with the following modification; you may not use this file except in
+//   compliance with the Apache License and the following modification to it:
+//   Section 6. Trademarks. is deleted and replaced with:
+//
+//   6. Trademarks. This License does not grant permission to use the trade
+//      names, trademarks, service marks, or product names of the Licensor
+//      and its affiliates, except as required to comply with Section 4(c) of
+//      the License and to reproduce the content of the NOTICE file.
+//
+//   You may obtain a copy of the Apache License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the Apache License with the above modification is
+//   distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+//   KIND, either express or implied. See the Apache License for the specific
+//   language governing permissions and limitations under the Apache License.
 //
 
 #ifndef OPENSUBDIV3_FAR_STENCILTABLE_FACTORY_H
@@ -276,14 +293,14 @@ public:
     static StencilTable const * Create(
                 TopologyRefiner const & refiner, Options options = Options()) {
 
-        return reinterpret_cast<StencilTable const *>(
+        return static_cast<StencilTable const *>(
                 BaseFactory::Create(refiner, options));
     }
 
     static StencilTable const * Create(
                 int numTables, StencilTable const ** tables) {
 
-        return reinterpret_cast<StencilTable const *>(
+        return static_cast<StencilTable const *>(
                 BaseFactory::Create(numTables,
                         reinterpret_cast<BaseTable const **>(tables)));
     }
@@ -294,7 +311,7 @@ public:
                 StencilTable const *localPointStencilTable,
                 bool factorize = true) {
 
-        return reinterpret_cast<StencilTable const *>(
+        return static_cast<StencilTable const *>(
                 BaseFactory::AppendLocalPointStencilTable(refiner,
                         static_cast<BaseTable const *>(baseStencilTable),
                         static_cast<BaseTable const *>(localPointStencilTable),
@@ -307,7 +324,7 @@ public:
                 StencilTable const *localPointStencilTable,
                 bool factorize = true) {
 
-        return reinterpret_cast<StencilTable const *>(
+        return static_cast<StencilTable const *>(
                 BaseFactory::AppendLocalPointStencilTableVarying(refiner,
                         static_cast<BaseTable const *>(baseStencilTable),
                         static_cast<BaseTable const *>(localPointStencilTable),
@@ -321,7 +338,7 @@ public:
                 int channel = 0,
                 bool factorize = true) {
 
-        return reinterpret_cast<StencilTable const *>(
+        return static_cast<StencilTable const *>(
                 BaseFactory::AppendLocalPointStencilTableFaceVarying(refiner,
                         static_cast<BaseTable const *>(baseStencilTable),
                         static_cast<BaseTable const *>(localPointStencilTable),
@@ -347,7 +364,7 @@ public:
                 PatchTable const * patchTable = 0,
                 Options options = Options()) {
 
-        return reinterpret_cast<LimitStencilTable const *>(
+        return static_cast<LimitStencilTable const *>(
                 BaseFactory::Create(
                         refiner,
                         locationArrays,

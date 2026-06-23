@@ -1,8 +1,25 @@
 //
 //   Copyright 2015 DreamWorks Animation LLC.
 //
-//   Licensed under the terms set forth in the LICENSE.txt file available at
-//   https://opensubdiv.org/license.
+//   Licensed under the Apache License, Version 2.0 (the "Apache License")
+//   with the following modification; you may not use this file except in
+//   compliance with the Apache License and the following modification to it:
+//   Section 6. Trademarks. is deleted and replaced with:
+//
+//   6. Trademarks. This License does not grant permission to use the trade
+//      names, trademarks, service marks, or product names of the Licensor
+//      and its affiliates, except as required to comply with Section 4(c) of
+//      the License and to reproduce the content of the NOTICE file.
+//
+//   You may obtain a copy of the Apache License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the Apache License with the above modification is
+//   distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+//   KIND, either express or implied. See the Apache License for the specific
+//   language governing permissions and limitations under the Apache License.
 //
 #ifndef OPENSUBDIV3_FAR_TOPOLOGY_LEVEL_H
 #define OPENSUBDIV3_FAR_TOPOLOGY_LEVEL_H
@@ -113,36 +130,11 @@ public:
     /// \brief Return if the vertex is non-manifold
     bool IsVertexNonManifold(Index v) const { return _level->isVertexNonManifold(v); }
 
-    /// \brief Return if the edge is a boundary (only one incident face)
+    /// \brief Return if the edge is a boundary
     bool IsEdgeBoundary(Index e) const   { return _level->getEdgeTag(e)._boundary; }
 
-    /// \brief Return if the vertex is on a boundary (at least one incident boundary edge)
+    /// \brief Return if the vertex is a boundary
     bool IsVertexBoundary(Index v) const { return _level->getVertexTag(v)._boundary; }
-
-    /// \brief Return if the vertex is a corner (only one incident face)
-    bool IsVertexCorner(Index v) const { return (_level->getNumVertexFaces(v) == 1); }
-
-    /// \brief Return if the valence of the vertex is regular (must be manifold)
-    ///
-    /// Note that this test only determines if the valence of the vertex is regular
-    /// with respect to the assigned subdivision scheme -- not if the neighborhood
-    /// around the vertex is regular. The latter depends on a number of factors
-    /// including the incident faces of the vertex (they must all be regular) and
-    /// the presence of sharpness at the vertex itself or its incident edges.
-    ///
-    /// The regularity of the valence is a necessary but not a sufficient condition
-    /// in determining the regularity of the neighborhood. For example, while the
-    /// valence of an interior vertex may be regular, its neighborhood is not if the
-    /// vertex was made infinitely sharp.  Conversely, a corner vertex is considered
-    /// regular by its valence but its neighborhood is not if the vertex was not made
-    /// infinitely sharp.
-    ///
-    /// Whether the valence of the vertex is regular is also a property that remains
-    /// the same for the vertex in all subdivision levels. In contrast, the regularity
-    /// of the region around the vertex may change as the presence of irregular faces
-    /// or semi-sharp features is reduced by subdivision.
-    ///
-    bool IsVertexValenceRegular(Index v) const { return !_level->getVertexTag(v)._xordinary || IsVertexCorner(v); }
     //@}
 
     //@{
@@ -157,18 +149,6 @@ public:
 
     /// \brief Return the sharpness assigned a given vertex
     float GetVertexSharpness(Index v) const { return _level->getVertexSharpness(v); }
-
-    /// \brief Return if the edge is infinitely-sharp
-    bool IsEdgeInfSharp(Index e) const { return _level->getEdgeTag(e)._infSharp; }
-
-    /// \brief Return if the vertex is infinitely-sharp
-    bool IsVertexInfSharp(Index v) const { return _level->getVertexTag(v)._infSharp; }
-
-    /// \brief Return if the edge is semi-sharp
-    bool IsEdgeSemiSharp(Index e) const { return _level->getEdgeTag(e)._semiSharp; }
-
-    /// \brief Return if the vertex is semi-sharp
-    bool IsVertexSemiSharp(Index v) const { return _level->getVertexTag(v)._semiSharp; }
 
     /// \brief Return if a given face has been tagged as a hole
     bool  IsFaceHole(Index f) const         { return _level->isFaceHole(f); }

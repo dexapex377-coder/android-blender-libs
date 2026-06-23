@@ -1,8 +1,25 @@
 //
 //   Copyright 2014 DreamWorks Animation LLC.
 //
-//   Licensed under the terms set forth in the LICENSE.txt file available at
-//   https://opensubdiv.org/license.
+//   Licensed under the Apache License, Version 2.0 (the "Apache License")
+//   with the following modification; you may not use this file except in
+//   compliance with the Apache License and the following modification to it:
+//   Section 6. Trademarks. is deleted and replaced with:
+//
+//   6. Trademarks. This License does not grant permission to use the trade
+//      names, trademarks, service marks, or product names of the Licensor
+//      and its affiliates, except as required to comply with Section 4(c) of
+//      the License and to reproduce the content of the NOTICE file.
+//
+//   You may obtain a copy of the Apache License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the Apache License with the above modification is
+//   distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+//   KIND, either express or implied. See the Apache License for the specific
+//   language governing permissions and limitations under the Apache License.
 //
 #ifndef OPENSUBDIV3_SDC_OPTIONS_H
 #define OPENSUBDIV3_SDC_OPTIONS_H
@@ -72,34 +89,33 @@ public:
     VtxBoundaryInterpolation GetVtxBoundaryInterpolation() const { return (VtxBoundaryInterpolation) _vtxBoundInterp; }
 
     /// \brief Set vertex boundary interpolation rule
-    void SetVtxBoundaryInterpolation(VtxBoundaryInterpolation b) { _vtxBoundInterp = (EnumIntType) b; }
+    void SetVtxBoundaryInterpolation(VtxBoundaryInterpolation b) { _vtxBoundInterp = b; }
 
     /// \brief Get face-varying interpolation rule
     FVarLinearInterpolation GetFVarLinearInterpolation() const { return (FVarLinearInterpolation) _fvarLinInterp; }
 
     /// \brief Set face-varying interpolation rule
-    void SetFVarLinearInterpolation(FVarLinearInterpolation b) { _fvarLinInterp = (EnumIntType) b; }
+    void SetFVarLinearInterpolation(FVarLinearInterpolation b) { _fvarLinInterp = b; }
 
     /// \brief Get edge crease rule
     CreasingMethod GetCreasingMethod() const { return (CreasingMethod) _creasingMethod; }
 
     /// \brief Set edge crease rule
-    void SetCreasingMethod(CreasingMethod c) { _creasingMethod = (EnumIntType) c; }
+    void SetCreasingMethod(CreasingMethod c) { _creasingMethod = c; }
 
     /// \brief Get triangle subdivision weights rule (Catmark scheme only !)
     TriangleSubdivision GetTriangleSubdivision() const { return (TriangleSubdivision) _triangleSub; }
 
     /// \brief Set triangle subdivision weights rule (Catmark scheme only !)
-    void SetTriangleSubdivision(TriangleSubdivision t) { _triangleSub = (EnumIntType) t; }
+    void SetTriangleSubdivision(TriangleSubdivision t) { _triangleSub = t; }
 
 private:
-    //  Use a small integer type to pack these rather than bitfields:
-    typedef unsigned char EnumIntType;
 
-    EnumIntType _vtxBoundInterp;
-    EnumIntType _fvarLinInterp;
-    EnumIntType _creasingMethod;
-    EnumIntType _triangleSub;
+    //  Bitfield members:
+    unsigned int _vtxBoundInterp  : 2,
+                 _fvarLinInterp   : 3,
+                 _creasingMethod  : 2,
+                 _triangleSub     : 2;
 };
 
 } // end namespace sdc

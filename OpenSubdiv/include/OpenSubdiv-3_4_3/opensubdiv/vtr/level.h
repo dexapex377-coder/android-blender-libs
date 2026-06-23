@@ -1,8 +1,25 @@
 //
 //   Copyright 2014 DreamWorks Animation LLC.
 //
-//   Licensed under the terms set forth in the LICENSE.txt file available at
-//   https://opensubdiv.org/license.
+//   Licensed under the Apache License, Version 2.0 (the "Apache License")
+//   with the following modification; you may not use this file except in
+//   compliance with the Apache License and the following modification to it:
+//   Section 6. Trademarks. is deleted and replaced with:
+//
+//   6. Trademarks. This License does not grant permission to use the trade
+//      names, trademarks, service marks, or product names of the Licensor
+//      and its affiliates, except as required to comply with Section 4(c) of
+//      the License and to reproduce the content of the NOTICE file.
+//
+//   You may obtain a copy of the Apache License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the Apache License with the above modification is
+//   distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+//   KIND, either express or implied. See the Apache License for the specific
+//   language governing permissions and limitations under the Apache License.
 //
 #ifndef OPENSUBDIV3_VTR_LEVEL_H
 #define OPENSUBDIV3_VTR_LEVEL_H
@@ -83,7 +100,7 @@ public:
         //  When cleared, the VTag ALMOST represents a smooth, regular, interior
         //  vertex -- the Type enum requires a bit be explicitly set for Smooth,
         //  so that must be done explicitly if desired on initialization.
-        void clear() { std::memset((void*) this, 0, sizeof(VTag)); }
+        void clear() { std::memset(this, 0, sizeof(VTag)); }
 
         typedef unsigned short VTagSize;
 
@@ -124,7 +141,7 @@ public:
         ETag() { }
 
         //  When cleared, the ETag represents a smooth, manifold, interior edge
-        void clear() { std::memset((void*) this, 0, sizeof(ETag)); }
+        void clear() { std::memset(this, 0, sizeof(ETag)); }
 
         typedef unsigned char ETagSize;
 
@@ -148,7 +165,7 @@ public:
     struct FTag {
         FTag() { }
 
-        void clear() { std::memset((void*) this, 0, sizeof(FTag)); }
+        void clear() { std::memset(this, 0, sizeof(FTag)); }
 
         typedef unsigned char FTagSize;
 
@@ -174,9 +191,9 @@ public:
     //  use of the const method here to direct inspection of the member.
     //
     struct VSpan {
-        VSpan() { std::memset((void*) this, 0, sizeof(VSpan)); }
+        VSpan() { std::memset(this, 0, sizeof(VSpan)); }
 
-        void clear()            { std::memset((void*) this, 0, sizeof(VSpan)); }
+        void clear()            { std::memset(this, 0, sizeof(VSpan)); }
         bool isAssigned() const { return _numFaces > 0; }
 
         LocalIndex _numFaces;
@@ -455,7 +472,6 @@ public:
     void orientIncidentComponents();
     bool orderVertexFacesAndEdges(Index vIndex, Index* vFaces, Index* vEdges) const;
     bool orderVertexFacesAndEdges(Index vIndex);
-    bool testVertexNonManifoldCrease(Index vIndex) const;
     void populateLocalIndices();
 
     IndexArray shareFaceVertCountsAndOffsets() const;
@@ -785,7 +801,7 @@ Level::resizeFaces(int faceCount) {
     _faceVertCountsAndOffsets.resize(2 * faceCount);
 
     _faceTags.resize(faceCount);
-    std::memset((void*) &_faceTags[0], 0, _faceCount * sizeof(FTag));
+    std::memset(&_faceTags[0], 0, _faceCount * sizeof(FTag));
 }
 inline void
 Level::resizeFaceVertices(int totalFaceVertCount) {
@@ -806,7 +822,7 @@ Level::resizeEdges(int edgeCount) {
     _edgeTags.resize(edgeCount);
 
     if (edgeCount>0) {
-        std::memset((void*) &_edgeTags[0], 0, _edgeCount * sizeof(ETag));
+        std::memset(&_edgeTags[0], 0, _edgeCount * sizeof(ETag));
     }
 }
 inline void
@@ -830,7 +846,7 @@ Level::resizeVertices(int vertCount) {
 
     _vertSharpness.resize(vertCount);
     _vertTags.resize(vertCount);
-    std::memset((void*) &_vertTags[0], 0, _vertCount * sizeof(VTag));
+    std::memset(&_vertTags[0], 0, _vertCount * sizeof(VTag));
 }
 inline void
 Level::resizeVertexFaces(int totalVertFaceCount) {

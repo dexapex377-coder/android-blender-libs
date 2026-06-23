@@ -1,8 +1,25 @@
 //
 //   Copyright 2013 Pixar
 //
-//   Licensed under the terms set forth in the LICENSE.txt file available at
-//   https://opensubdiv.org/license.
+//   Licensed under the Apache License, Version 2.0 (the "Apache License")
+//   with the following modification; you may not use this file except in
+//   compliance with the Apache License and the following modification to it:
+//   Section 6. Trademarks. is deleted and replaced with:
+//
+//   6. Trademarks. This License does not grant permission to use the trade
+//      names, trademarks, service marks, or product names of the Licensor
+//      and its affiliates, except as required to comply with Section 4(c) of
+//      the License and to reproduce the content of the NOTICE file.
+//
+//   You may obtain a copy of the Apache License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the Apache License with the above modification is
+//   distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+//   KIND, either express or implied. See the Apache License for the specific
+//   language governing permissions and limitations under the Apache License.
 //
 
 #ifndef OPENSUBDIV3_FAR_PATCH_TABLE_H
@@ -528,22 +545,8 @@ private:
     //
     // Patch arrays
     //
-    struct PatchArray {
-        PatchArray(PatchDescriptor d, int np, Index v, Index p, Index qo) :
-            desc(d), numPatches(np), vertIndex(v),
-            patchIndex(p), quadOffsetIndex (qo) { }
 
-        void print() const;
-
-        PatchDescriptor desc;  // type of patches in the array
-
-        int numPatches;        // number of patches in the array
-
-        Index vertIndex,       // index to the first control vertex
-              patchIndex,      // absolute index of the first patch in the array
-              quadOffsetIndex; // index of the first quad offset entry
-    };
-
+    struct PatchArray;
     typedef std::vector<PatchArray> PatchArrayVector;
 
     PatchArray & getPatchArray(Index arrayIndex);
@@ -571,41 +574,7 @@ private:
     // Face-varying patch channels
     //
 
-    //
-    // FVarPatchChannel
-    //
-    // Stores a record for each patch in the primitive :
-    //
-    //  - Each patch in the PatchTable has a corresponding patch in each
-    //    face-varying patch channel. Patch vertex indices are sorted in the same
-    //    patch-type order as PatchTable::PTables. Face-varying data for a patch
-    //    can therefore be quickly accessed by using the patch primitive ID as
-    //    index into patchValueOffsets to locate the face-varying control vertex
-    //    indices.
-    //
-    //  - Face-varying channels can have a different interpolation modes
-    //
-    //  - Unlike "vertex" patches, there are no transition masks required
-    //    for face-varying patches.
-    //
-    //  - Face-varying patches still require boundary edge masks.
-    //
-    //  - currently most patches with sharp boundaries but smooth interiors have
-    //    to be isolated to level 10 : we need a special type of bicubic patch
-    //    similar to single-crease to resolve this condition without requiring
-    //    isolation if possible
-    //
-    struct FVarPatchChannel {
-        Sdc::Options::FVarLinearInterpolation interpolation;
-
-        PatchDescriptor regDesc;
-        PatchDescriptor irregDesc;
-
-        int stride;
-
-        std::vector<Index> patchValues;
-        std::vector<PatchParam> patchParam;
-    };
+    struct FVarPatchChannel;
     typedef std::vector<FVarPatchChannel> FVarPatchChannelVector;
 
     FVarPatchChannel & getFVarPatchChannel(int channel);
@@ -760,19 +729,19 @@ PatchTable::LocalPointFaceVaryingStencilPrecisionMatchesType<double>() const {
 inline StencilTable const *
 PatchTable::GetLocalPointStencilTable() const {
     assert(LocalPointStencilPrecisionMatchesType<float>());
-    return reinterpret_cast<StencilTable const *>(_localPointStencils.Get<float>());
+    return static_cast<StencilTable const *>(_localPointStencils.Get<float>());
 }
 inline StencilTable const *
 PatchTable::GetLocalPointVaryingStencilTable() const {
     assert(LocalPointVaryingStencilPrecisionMatchesType<float>());
-    return reinterpret_cast<StencilTable const *>(
+    return static_cast<StencilTable const *>(
             _localPointVaryingStencils.Get<float>());
 }
 inline StencilTable const *
 PatchTable::GetLocalPointFaceVaryingStencilTable(int channel) const {
     assert(LocalPointFaceVaryingStencilPrecisionMatchesType<float>());
     if (channel >= 0 && channel < (int)_localPointFaceVaryingStencils.size()) {
-        return reinterpret_cast<StencilTable const *>(
+        return static_cast<StencilTable const *>(
                 _localPointFaceVaryingStencils[channel].Get<float>());
     }
     return NULL;

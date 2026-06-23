@@ -1,8 +1,25 @@
 //
 //   Copyright 2014 DreamWorks Animation LLC.
 //
-//   Licensed under the terms set forth in the LICENSE.txt file available at
-//   https://opensubdiv.org/license.
+//   Licensed under the Apache License, Version 2.0 (the "Apache License")
+//   with the following modification; you may not use this file except in
+//   compliance with the Apache License and the following modification to it:
+//   Section 6. Trademarks. is deleted and replaced with:
+//
+//   6. Trademarks. This License does not grant permission to use the trade
+//      names, trademarks, service marks, or product names of the Licensor
+//      and its affiliates, except as required to comply with Section 4(c) of
+//      the License and to reproduce the content of the NOTICE file.
+//
+//   You may obtain a copy of the Apache License at
+//
+//       http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the Apache License with the above modification is
+//   distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+//   KIND, either express or implied. See the Apache License for the specific
+//   language governing permissions and limitations under the Apache License.
 //
 #ifndef OPENSUBDIV3_FAR_TOPOLOGY_REFINER_FACTORY_H
 #define OPENSUBDIV3_FAR_TOPOLOGY_REFINER_FACTORY_H
@@ -305,19 +322,6 @@ protected:
     //  Not to be specialized:
     //
     static bool populateBaseLevel(TopologyRefiner& refiner, MESH const& mesh, Options options);
-
-private:
-    //
-    //  An oversight in the interfaces of the error reporting function between the factory
-    //  class and the Vtr::Level requires this adapter function to avoid warnings.
-    //
-    //  The static class method requires a reference as the MESH argument, but the interface
-    //  for Vtr::Level requires a pointer (void*). So this adapter with a MESH* argument is
-    //  used to effectively cast the function pointer required by Vtr::Level error reporting:
-    //
-    static void reportInvalidTopologyAdapter(TopologyError errCode, char const * msg, MESH const * mesh) {
-        reportInvalidTopology(errCode, msg, *mesh);
-    }
 };
 
 
@@ -376,7 +380,7 @@ TopologyRefinerFactory<MESH>::populateBaseLevel(TopologyRefiner& refiner, MESH c
     //  Otherwise edges and remaining topology will be completed from the face-vertices:
     //
     bool             validate = options.validateFullTopology;
-    TopologyCallback callback = reinterpret_cast<TopologyCallback>(reportInvalidTopologyAdapter);
+    TopologyCallback callback = reinterpret_cast<TopologyCallback>(reportInvalidTopology);
     void const *     userData = &mesh;
         
     if (! assignComponentTopology(refiner, mesh)) return false;
@@ -434,7 +438,7 @@ template <class MESH>
 inline void
 TopologyRefinerFactory<MESH>::setNumBaseFaceVertices(TopologyRefiner & newRefiner, Index f, int count) {
     newRefiner._levels[0]->resizeFaceVertices(f, count);
-    newRefiner._hasIrregFaces = newRefiner._hasIrregFaces || (count != newRefiner._regFaceSize);
+    newRefiner._hasIrregFaces |= (count != newRefiner._regFaceSize);
 }
 template <class MESH>
 inline void
@@ -536,7 +540,7 @@ template <class MESH>
 inline void
 TopologyRefinerFactory<MESH>::setBaseFaceHole(TopologyRefiner & newRefiner, Index f, bool b) {
     newRefiner._levels[0]->setFaceHole(f, b);
-    newRefiner._hasHoles = newRefiner._hasHoles || b;
+    newRefiner._hasHoles |= b;
 }
 
 template <class MESH>
