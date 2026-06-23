@@ -1,18 +1,18 @@
 #ifndef INCLUDED_OCIO_OPENCOLORABI_H
 #define INCLUDED_OCIO_OPENCOLORABI_H
 
-#define OCIO_NAMESPACE OpenColorIO_v2_3
+#define OCIO_NAMESPACE OpenColorIO_v2_5
 
-#define OCIO_VERSION_STR        "2.3.2"
+#define OCIO_VERSION_STR        "2.5.2"
 #define OCIO_VERSION_STATUS_STR ""
-#define OCIO_VERSION_FULL_STR   "2.3.2"
+#define OCIO_VERSION_FULL_STR   "2.5.2"
 
-#define OCIO_VERSION            "2.3.2"
+#define OCIO_VERSION            "2.5.2"
 
-#define OCIO_VERSION_HEX ((2 << 24) | (3 << 16) | (2 <<  8))
+#define OCIO_VERSION_HEX ((2 << 24) | (5 << 16) | (2 <<  8))
 
 #define OCIO_VERSION_MAJOR 2
-#define OCIO_VERSION_MINOR 3
+#define OCIO_VERSION_MINOR 5
 
 #if defined(_MSC_VER)
     #define OCIO_DEPRECATED(msg) __declspec(deprecated(msg))

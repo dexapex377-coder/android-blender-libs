@@ -49,6 +49,8 @@ jobs:
           mkdir -p install_root/lib install_root/include
           find build_ocio -name "*.so" -exec cp -v {} install_root/lib/ \;
           cp -rv OpenColorIO-2.5.2/include/* install_root/include/ 2>/dev/null || true
+          # Copy generated OpenColorABI.h from build dir (contains correct OCIO_NAMESPACE)
+          find build_ocio -name "OpenColorABI.h" -exec cp -v {} install_root/include/OpenColorIO/ \;
 
       - name: Prepare output
         run: |
