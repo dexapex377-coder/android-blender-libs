@@ -29,8 +29,21 @@ jobs:
 
           curl -L https://github.com/AcademySoftwareFoundation/OpenImageIO/archive/refs/tags/v3.1.14.0.tar.gz | tar xz
 
+          # Apple's clang on macOS
+          # Create OpenColorIO cmake config
+          mkdir -p OpenColorIO/lib/cmake/OpenColorIO
+          cat > OpenColorIO/lib/cmake/OpenColorIO/OpenColorIOConfig.cmake << 'EOFCM'
+if(NOT TARGET OpenColorIO::OpenColorIO)
+  add_library(OpenColorIO::OpenColorIO SHARED IMPORTED)
+  set_target_properties(OpenColorIO::OpenColorIO PROPERTIES
+    IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/../../../../lib/libOpenColorIO.so"
+    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/../../../../include"
+  )
+endif()
+set(OpenColorIO_FOUND TRUE)
+set(OPENCOLORIO_VERSION "2.3.2")
+EOFCM
           # Create tbb_stddef.h compat header for oneTBB (though USE_TBB=OFF)
-          echo '#include <tbb/version.h>' > Tbb/include/tbb/tbb_stddef.h
           # Fix cmake path: ensure IMath/lib/cmake/Imath/ exists for find_package
           rm -rf "$LIB_DIR/IMath/lib/cmake"
           mkdir -p "$LIB_DIR/IMath/lib"
@@ -68,7 +81,8 @@ jobs:
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH \
-            -DCMAKE_PREFIX_PATH="$LIB_DIR/IMath:$LIB_DIR/OpenExr:$LIB_DIR/boost/boost_1_71_0:$LIB_DIR/TIFF:$LIB_DIR/JPEG" \
+            -DOpenColorIO_DIR="$LIB_DIR/OpenColorIO/lib/cmake/OpenColorIO" \
+            -DCMAKE_PREFIX_PATH="$LIB_DIR/IMath:$LIB_DIR/OpenExr:$LIB_DIR/boost/boost_1_71_0:$LIB_DIR/TIFF:$LIB_DIR/JPEG:$LIB_DIR/OpenColorIO" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_oii -j$(nproc) || ninja -C build_oii -j1

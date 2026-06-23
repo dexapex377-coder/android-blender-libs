@@ -56,10 +56,12 @@ jobs:
             -DOIDN_BUILD_TESTS=OFF \
             -DCMAKE_INSTALL_PREFIX=install_root
 
-          ninja -C build_oidn -j$(nproc) || ninja -C build_oidn -j1
+          ninja -C build_oidn -j$(nproc) libOpenImageDenoise.so libOpenImageDenoise_device_cpu.so
           mkdir -p install_root/lib install_root/include
           find build_oidn -name "*.so" -exec cp -v {} install_root/lib/ \;
           cp -rv oidn-2.3.2/include/* install_root/include/ 2>/dev/null || true
+          # Remove test executables if any
+          rm -f install_root/lib/libOpenImageDenoise_utils.a install_root/lib/libOpenImageDenoise_weights.a 2>/dev/null || true
 
       - name: Prepare output
         run: |
