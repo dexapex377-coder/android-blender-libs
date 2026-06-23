@@ -54,6 +54,7 @@ jobs:
             --enable-tests=no \
             --enable-samples=no \
             --enable-tools=no \
+            --enable-static \
             --with-data-packaging=files \
             --prefix=$(pwd)/../install_root
 
