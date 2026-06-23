@@ -27,6 +27,14 @@ jobs:
 
           curl -L https://github.com/OpenImageDenoise/oidn/releases/download/v2.3.2/oidn-2.3.2.src.tar.gz | tar xz
 
+          # Patch thread.cpp: pthread_[get|set]affinity_np not available on Android Bionic
+          sed -i 's/pthread_getaffinity_np(thread, sizeof(cpu_set_t), &oldAffinities\[threadIndex\])/sched_getaffinity(0, sizeof(cpu_set_t), \&oldAffinities[threadIndex])/' \
+            oidn-2.3.2/core/thread.cpp
+          sed -i 's/pthread_setaffinity_np(thread, sizeof(cpu_set_t), &affinities\[threadIndex\])/sched_setaffinity(0, sizeof(cpu_set_t), \&affinities[threadIndex])/' \
+            oidn-2.3.2/core/thread.cpp
+          sed -i 's/pthread_setaffinity_np(thread, sizeof(cpu_set_t), &oldAffinities\[threadIndex\])/sched_setaffinity(0, sizeof(cpu_set_t), \&oldAffinities[threadIndex])/' \
+            oidn-2.3.2/core/thread.cpp
+
           # Install ISPC (required for CPU device)
           curl -L https://github.com/ispc/ispc/releases/download/v1.24.0/ispc-v1.24.0-linux.tar.gz | tar xz
           export PATH="$PWD/ispc-v1.24.0-linux/bin:$PATH"

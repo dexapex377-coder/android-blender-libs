@@ -30,8 +30,7 @@ jobs:
           # Patch OpenVDB cmake to accept our Boost version (1.71 < 1.73 required)
           sed -i 's/set(MINIMUM_BOOST_VERSION 1\.73)/set(MINIMUM_BOOST_VERSION 1.71)/' openvdb-10.0.1/cmake/config/OpenVDBVersions.cmake
 
-          # OpenVDB needs Boost - create compat header for oneTBB
-          echo '#include <tbb/version.h>' > Tbb/include/tbb/tbb_stddef.h
+          # OpenVDB needs Boost - compat header for oneTBB already handled by setting TBB_INCLUDE_DIR
 
           cmake -B build_vdb -S openvdb-10.0.1 \
             -G Ninja \
@@ -60,6 +59,9 @@ jobs:
             -DTBB_INCLUDE_DIR="$LIB_DIR/Tbb/include" \
             -DTbb_INCLUDE_DIR="$LIB_DIR/Tbb/include" \
             -DTbb_LIBRARY="$LIB_DIR/Tbb/lib/libtbb.so" \
+            -DTBB_LIBRARYDIR="$LIB_DIR/Tbb/lib" \
+            -DTbb_tbb_LIBRARY_RELEASE="$LIB_DIR/Tbb/lib/libtbb.so" \
+            -DTbb_tbbmalloc_LIBRARY_RELEASE="$LIB_DIR/Tbb/lib/libtbbmalloc.so" \
             -DCMAKE_FIND_ROOT_PATH="$LIB_DIR/Tbb:$LIB_DIR/boost/boost_1_71_0:$LIB_DIR/BoostIOStream/lib:$LIB_DIR/blosc" \
             -DBoost_INCLUDE_DIR="$LIB_DIR/boost/boost_1_71_0" \
             -DBoost_LIBRARY_DIR="$LIB_DIR/BoostIOStream/lib" \

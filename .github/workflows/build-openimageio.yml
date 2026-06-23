@@ -64,10 +64,11 @@ jobs:
             -DJPEG_INCLUDE_DIR="$LIB_DIR/JPEG/include" \
             -DJPEG_LIBRARY="$LIB_DIR/JPEG/lib/libjpeg.a" \
             -Dlibjpeg-turbo_DIR="$LIB_DIR/JPEG/lib/cmake/libjpeg-turbo" \
+            -DTIFF_ROOT="$LIB_DIR/TIFF" \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
             -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=BOTH \
             -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=BOTH \
-            -DCMAKE_PREFIX_PATH="$LIB_DIR/IMath:$LIB_DIR/OpenExr:$LIB_DIR/boost/boost_1_71_0" \
+            -DCMAKE_PREFIX_PATH="$LIB_DIR/IMath:$LIB_DIR/OpenExr:$LIB_DIR/boost/boost_1_71_0:$LIB_DIR/TIFF:$LIB_DIR/JPEG" \
             -DCMAKE_INSTALL_PREFIX=install_root
 
           ninja -C build_oii -j$(nproc) || ninja -C build_oii -j1
