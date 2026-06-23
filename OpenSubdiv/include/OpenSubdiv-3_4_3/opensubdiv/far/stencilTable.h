@@ -1,0 +1,1 @@
+/tmp/android-blender-libs/OpenSubdiv/include/opensubdiv/far/stencilTable.h
