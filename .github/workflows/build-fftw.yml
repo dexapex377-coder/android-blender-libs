@@ -36,7 +36,24 @@ jobs:
           NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
           TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
 
-          cmake -B build_fftw -S fftw-3.3.10 \
+          # Build double-precision (libfftw3.so) first
+          cmake -B build_fftw_d -S fftw-3.3.10 \
+            -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-29 \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_SHARED_LIBS=ON \
+            -DENABLE_FLOAT=OFF \
+            -DDISABLE_FORTRAN=ON \
+            -DWITH_OPENMP=OFF \
+            -DCMAKE_INSTALL_PREFIX=install_root_d
+
+          ninja -C build_fftw_d -j$(nproc)
+          ninja -C build_fftw_d install
+
+          # Build single-precision float (libfftw3f.so)
+          cmake -B build_fftw_f -S fftw-3.3.10 \
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
             -DANDROID_ABI=arm64-v8a \
@@ -46,10 +63,10 @@ jobs:
             -DENABLE_FLOAT=ON \
             -DDISABLE_FORTRAN=ON \
             -DWITH_OPENMP=OFF \
-            -DCMAKE_INSTALL_PREFIX=install_root
+            -DCMAKE_INSTALL_PREFIX=install_root_f
 
-          ninja -C build_fftw -j$(nproc)
-          ninja -C build_fftw install
+          ninja -C build_fftw_f -j$(nproc)
+          ninja -C build_fftw_f install
 
       - name: Strip and prepare output
         run: |
@@ -58,12 +75,15 @@ jobs:
 
           mkdir -p Fftw/lib Fftw/include
 
-          for f in install_root/lib/*.so; do
-            [ -f "$f" ] || continue
-            "$STRIP" -s "$f"
-            cp -v "$f" Fftw/lib/
+          for dir in install_root_d install_root_f; do
+            for f in $dir/lib/*.so; do
+              [ -f "$f" ] || continue
+              "$STRIP" -s "$f"
+              cp -v "$f" Fftw/lib/
+            done
           done
-          cp -rv install_root/include/* Fftw/include/
+          # Use double-precision install for headers (same for both)
+          cp -rv install_root_d/include/* Fftw/include/
 
           echo "=== FFTW3 structure ==="
           find Fftw -type f
