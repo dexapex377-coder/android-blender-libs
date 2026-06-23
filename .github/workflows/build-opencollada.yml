@@ -34,13 +34,9 @@ jobs:
           done
 
           # Patch root CMakeLists.txt: skip PCRE on Linux (not in NDK sysroot)
-          # Comment out the find_package(PCRE) call and set empty vars
-          sed -i '/find_package(PCRE)/{
-            a set(PCRE_FOUND FALSE)
-            a set(PCRE_INCLUDE_DIR "")
-            a set(PCRE_LIBRARIES "")
-            s/.*/if(ANDROID) # PCRE disabled for Android/
-          }' OpenCOLLADA-1.6.68/CMakeLists.txt
+          # Replace find_package(PCRE) with manual variable setting
+          sed -i 's/^find_package(PCRE)$/set(PCRE_FOUND FALSE)\nset(PCRE_INCLUDE_DIR "")\nset(PCRE_LIBRARIES "")/' \
+            OpenCOLLADA-1.6.68/CMakeLists.txt
 
           # Patch COLLADABaseUtils: avoid using empty PCRE vars in include/link
           sed -i 's/\${PCRE_INCLUDE_DIR}//g' OpenCOLLADA-1.6.68/COLLADABaseUtils/CMakeLists.txt
