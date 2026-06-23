@@ -34,10 +34,13 @@ jobs:
           done
 
           sed -i 's/\r$//' OpenCOLLADA-1.6.68/CMakeLists.txt
-          python3 -c "import re,sys;c=open('OpenCOLLADA-1.6.68/CMakeLists.txt').read();c=re.sub('find_package\(PCRE\)\n.*?\nendif\(\)','set(PCRE_FOUND FALSE)\nset(PCRE_INCLUDE_DIR \"\")\nset(PCRE_LIBRARIES \"\")',c,flags=re.DOTALL);open('OpenCOLLADA-1.6.68/CMakeLists.txt','w').write(c)"
-
-          sed -i 's/\${PCRE_INCLUDE_DIR}//g' OpenCOLLADA-1.6.68/COLLADABaseUtils/CMakeLists.txt
-          sed -i 's/\${PCRE_LIBRARIES}//g' OpenCOLLADA-1.6.68/COLLADABaseUtils/CMakeLists.txt
+          # Strip entire PCRE block (if/endif balanced) from CMakeLists.txt
+          python3 -c $'l=open("OpenCOLLADA-1.6.68/CMakeLists.txt").readlines();o=[];b=False;d=0\nfor x in l:\n if "#adding PCRE" in x and not b: b=True; continue\n if b:\n  s=x.strip()\n  if s.startswith("if(") or s.startswith("if ("): d+=1\n  elif s.startswith("endif(") or s.startswith("endif ("):\n   if d==0: b=False; continue\n   d-=1\n  continue\n o.append(x)\nopen("OpenCOLLADA-1.6.68/CMakeLists.txt","w").writelines(o)'
+          # Remove PCRE from all consumers
+          for f in COLLADABaseUtils COLLADASaxFrameworkLoader COLLADAFramework GeneratedSaxParser COLLADAValidator; do
+            sed -i 's/\${PCRE_INCLUDE_DIR}//g' OpenCOLLADA-1.6.68/$f/CMakeLists.txt 2>/dev/null || true
+            sed -i 's/\${PCRE_LIBRARIES}//g' OpenCOLLADA-1.6.68/$f/CMakeLists.txt 2>/dev/null || true
+          done
 
           cmake -B build_ocollada -S OpenCOLLADA-1.6.68 \
             -G Ninja \
