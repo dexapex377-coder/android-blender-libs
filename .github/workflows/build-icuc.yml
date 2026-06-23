@@ -87,8 +87,7 @@ jobs:
               -Wl,--whole-archive install_root/lib/libicui18n.a \
               install_root/lib/libicuuc.a \
               install_root/lib/libicudata.a \
-              -Wl,--no-whole-archive \
-              -ldl -lpthread
+              -Wl,--no-whole-archive
           else
             # No .a files — create a linker script that pulls in all three .so files
             cp -v install_root/lib/libicui18n.so install_root/lib/libicuuc.so install_root/lib/libicudata.so install_root/lib_combined/
