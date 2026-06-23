@@ -32,6 +32,12 @@ jobs:
 
           # OpenVDB needs Boost - compat header for oneTBB already handled by setting TBB_INCLUDE_DIR
 
+          # Create stub Boost::regex library for FindBoost.cmake compatibility
+          CXX="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++"
+          echo 'int boost_regex_dummy = 0;' > /tmp/dummy_regex.cpp
+          $CXX --target=aarch64-none-linux-android29 -shared -fPIC -nostdlib \
+            -o "$LIB_DIR/BoostIOStream/lib/libboost_regex-mt-a64.so" /tmp/dummy_regex.cpp
+
           cmake -B build_vdb -S openvdb-10.0.1 \
             -G Ninja \
             -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN" \
