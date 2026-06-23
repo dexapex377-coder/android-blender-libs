@@ -93,10 +93,8 @@ jobs:
             # No .a files — create a linker script that pulls in all three .so files
             cp -v install_root/lib/libicui18n.so install_root/lib/libicuuc.so install_root/lib/libicudata.so install_root/lib_combined/
             # Write a linker script as libicuc.so
-            cat > install_root/lib_combined/libicuc.so << 'LSCRIPT'
-            /* GNU ld linker script */
-            GROUP ( libicui18n.so libicuuc.so libicudata.so )
-            LSCRIPT
+            echo '/* GNU ld linker script */' > install_root/lib_combined/libicuc.so
+            echo 'GROUP ( libicui18n.so libicuuc.so libicudata.so )' >> install_root/lib_combined/libicuc.so
           fi
 
       - name: Prepare output
