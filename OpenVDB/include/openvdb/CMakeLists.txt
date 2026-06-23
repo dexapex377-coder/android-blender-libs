@@ -15,7 +15,7 @@ include(GNUInstallDirs)
 ###### OpenVDB Core Options
 
 option(OPENVDB_CORE_SHARED "Build dynamically linked version of the core library." ON)
-option(OPENVDB_CORE_STATIC "Build statically linked version of the core library." ON)
+option(OPENVDB_CORE_STATIC "Build statically linked version of the core library." OFF)
 
 if(NOT OPENVDB_NAMESPACE_SUFFIX)
   set(OPENVDB_NAMESPACE_SUFFIX "" CACHE STRING
@@ -118,8 +118,10 @@ if(OPENVDB_CORE_SHARED AND NOT Boost_USE_STATIC_LIBS)
 endif()
 
 if(OPENVDB_USE_DELAYED_LOADING)
-  find_package(Boost ${MINIMUM_BOOST_VERSION} REQUIRED COMPONENTS iostreams)
+  #find_package(Boost ${MINIMUM_BOOST_VERSION} REQUIRED COMPONENTS iostreams)
 endif()
+
+SET(Boost_INCLUDE_DIRS C:/local/boost_1_71_0)
 
 if(OPENVDB_FUTURE_DEPRECATION AND FUTURE_MINIMUM_BOOST_VERSION)
   # The X.Y.Z boost version value isn't available until CMake 3.14
@@ -130,13 +132,13 @@ if(OPENVDB_FUTURE_DEPRECATION AND FUTURE_MINIMUM_BOOST_VERSION)
   endif()
 endif()
 
-find_package(TBB ${MINIMUM_TBB_VERSION} REQUIRED COMPONENTS tbb)
-if(OPENVDB_FUTURE_DEPRECATION AND FUTURE_MINIMUM_TBB_VERSION)
-  if(${Tbb_VERSION} VERSION_LESS FUTURE_MINIMUM_TBB_VERSION)
-    message(DEPRECATION "Support for TBB versions < ${FUTURE_MINIMUM_TBB_VERSION} "
-      "is deprecated and will be removed.")
-  endif()
-endif()
+#find_package(TBB ${MINIMUM_TBB_VERSION} REQUIRED COMPONENTS tbb)
+#if(OPENVDB_FUTURE_DEPRECATION AND FUTURE_MINIMUM_TBB_VERSION)
+#  if(${Tbb_VERSION} VERSION_LESS FUTURE_MINIMUM_TBB_VERSION)
+#    message(DEPRECATION "Support for TBB versions < ${FUTURE_MINIMUM_TBB_VERSION} "
+#      "is deprecated and will be removed.")
+#  endif()
+#endif()
 
 if(USE_IMATH_HALF)
   find_package(Imath CONFIG)
@@ -223,7 +225,7 @@ endif()
 # always be pulled from there (we should always be using the version of TBB
 # shipped with Houdini).
 
-list(APPEND OPENVDB_CORE_DEPENDENT_LIBS TBB::tbb)
+#list(APPEND OPENVDB_CORE_DEPENDENT_LIBS TBB::tbb)
 
 if(USE_LOG4CPLUS)
   list(APPEND OPENVDB_CORE_DEPENDENT_LIBS Log4cplus::log4cplus)
@@ -254,7 +256,7 @@ endif()
 # other headers.
 
 if(OPENVDB_USE_DELAYED_LOADING)
-  list(APPEND OPENVDB_CORE_DEPENDENT_LIBS Boost::iostreams)
+  #list(APPEND OPENVDB_CORE_DEPENDENT_LIBS Boost::iostreams)
 endif()
 
 if(WIN32)
@@ -688,6 +690,8 @@ endif()
 if(OPENVDB_CORE_SHARED)
   target_include_directories(openvdb_shared
     PUBLIC ../ ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_BINARY_DIR}/openvdb
+          C:/local/boost_1_71_0
+          F:/FreeProjects/android/Tbb/app/src/main/cpp/tbb-master/include/
     PRIVATE .
   )
 
@@ -698,7 +702,12 @@ if(OPENVDB_CORE_SHARED)
 
   target_link_libraries(openvdb_shared
     PUBLIC ${OPENVDB_CORE_DEPENDENT_LIBS}
-  )
+  F:\\FreeProjects\\android\\Tbb\\app\\build\\intermediates\\stripped_native_libs\\release\\out\\lib\\arm64-v8a\\libtbb.so
+  F:\\FreeProjects\\android\\Tbb\\app\\build\\intermediates\\stripped_native_libs\\release\\out\\lib\\arm64-v8a\\libtbbmalloc.so
+  F:\\FreeProjects\\android\\Tbb\\app\\build\\intermediates\\stripped_native_libs\\release\\out\\lib\\arm64-v8a\\libtbbmalloc_proxy.so
+          F:\\FreeProjects\\android\\BoostIOStream\\app\\build\\intermediates\\stripped_native_libs\\release\\out\\lib\\arm64-v8a\\libboostiostreams.so
+  android
+          )
 
   set_target_properties(openvdb_shared
     PROPERTIES
