@@ -76,8 +76,11 @@ jobs:
           mkdir -p OpenCOLLADA/lib OpenCOLLADA/include
           for f in install_root/lib/*.so; do [ -f "$f" ] || continue; cp -v "$f" OpenCOLLADA/lib/; done
           cp -rv install_root/include/* OpenCOLLADA/include/ 2>/dev/null || true
+          # Preserve full source tree so FindOpenCOLLADA.cmake include paths work
+          rm -rf OpenCOLLADA/include/OpenCOLLADA-main
+          cp -rv OpenCOLLADA-1.6.68 OpenCOLLADA/include/OpenCOLLADA-main 2>/dev/null || true
           echo "=== OpenCOLLADA structure ==="
-          find OpenCOLLADA -type f
+          find OpenCOLLADA -type f | head -30
 
       - name: Commit and push to repo
         run: |
