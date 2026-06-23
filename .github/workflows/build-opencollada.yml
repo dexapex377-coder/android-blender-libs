@@ -34,14 +34,7 @@ jobs:
           done
 
           sed -i 's/\r$//' OpenCOLLADA-1.6.68/CMakeLists.txt
-          python3 -c "
-import re
-with open('OpenCOLLADA-1.6.68/CMakeLists.txt', 'r') as f:
-    content = f.read()
-content = re.sub(r'find_package\(PCRE\)\n.*?\nendif\(\)', r'set(PCRE_FOUND FALSE)\nset(PCRE_INCLUDE_DIR \"\")\nset(PCRE_LIBRARIES \"\")', content, flags=re.DOTALL)
-with open('OpenCOLLADA-1.6.68/CMakeLists.txt', 'w') as f:
-    f.write(content)
-"
+          python3 -c "import re,sys;c=open('OpenCOLLADA-1.6.68/CMakeLists.txt').read();c=re.sub('find_package\(PCRE\)\n.*?\nendif\(\)','set(PCRE_FOUND FALSE)\nset(PCRE_INCLUDE_DIR \"\")\nset(PCRE_LIBRARIES \"\")',c,flags=re.DOTALL);open('OpenCOLLADA-1.6.68/CMakeLists.txt','w').write(c)"
 
           sed -i 's/\${PCRE_INCLUDE_DIR}//g' OpenCOLLADA-1.6.68/COLLADABaseUtils/CMakeLists.txt
           sed -i 's/\${PCRE_LIBRARIES}//g' OpenCOLLADA-1.6.68/COLLADABaseUtils/CMakeLists.txt
