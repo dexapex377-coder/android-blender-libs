@@ -25,6 +25,7 @@ jobs:
           NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
           TOOLCHAIN="$NDK_DIR/build/cmake/android.toolchain.cmake"
           SYSROOT="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/sysroot"
+          LIB_DIR=$(pwd)
 
           curl -L https://github.com/KhronosGroup/OpenCOLLADA/archive/refs/tags/v1.6.68.tar.gz | tar xz
 
