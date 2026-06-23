@@ -72,12 +72,32 @@ jobs:
 
           # Combine ICU libs into single libicuc.so (matching dshawshank)
           mkdir -p install_root/lib_combined
-          $CC -shared -o install_root/lib_combined/libicuc.so \
-            -Wl,--whole-archive install_root/lib/libicui18n.a \
-            install_root/lib/libicuuc.a \
-            install_root/lib/libicudata.a \
-            -Wl,--no-whole-archive \
-            -ldl -lpthread
+          # Try to find .a files (install_root/lib/ or build tree)
+          for lib in icui18n icuuc icudata; do
+            if [ ! -f "install_root/lib/lib${lib}.a" ]; then
+              found=$(find . -name "lib${lib}.a" -type f 2>/dev/null | head -1)
+              if [ -n "$found" ]; then
+                cp -v "$found" "install_root/lib/"
+              fi
+            fi
+          done
+          if [ -f "install_root/lib/libicui18n.a" ] && [ -f "install_root/lib/libicuuc.a" ] && [ -f "install_root/lib/libicudata.a" ]; then
+            # We have .a files — merge them into a single .so
+            $CC -shared -o install_root/lib_combined/libicuc.so \
+              -Wl,--whole-archive install_root/lib/libicui18n.a \
+              install_root/lib/libicuuc.a \
+              install_root/lib/libicudata.a \
+              -Wl,--no-whole-archive \
+              -ldl -lpthread
+          else
+            # No .a files — create a linker script that pulls in all three .so files
+            cp -v install_root/lib/libicui18n.so install_root/lib/libicuuc.so install_root/lib/libicudata.so install_root/lib_combined/
+            # Write a linker script as libicuc.so
+            cat > install_root/lib_combined/libicuc.so << 'LSCRIPT'
+/* GNU ld linker script */
+GROUP ( libicui18n.so libicuuc.so libicudata.so )
+LSCRIPT
+          fi
 
       - name: Prepare output
         run: |
