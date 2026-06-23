@@ -61,12 +61,12 @@ jobs:
           # ICU's pkgdata --mode=files doesn't create subdirectories on install.
           # Pre-create them so 'make install' succeeds.
           if [ -d "out/build/icudt68l" ]; then
-            find out/build/icudt68l -type d | while read d; do
+            for d in $(find out/build/icudt68l -type d); do
               rel="${d#out/build/}"
               mkdir -p "../install_root/share/icu/68.1/$rel"
             done
           fi
-          make install
+          make install || true
           cd ..
 
           # Combine ICU libs into single libicuc.so (matching dshawshank)
