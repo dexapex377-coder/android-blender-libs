@@ -31,7 +31,7 @@ jobs:
 
           # Create OpenColorIO cmake config
           mkdir -p OpenColorIO/lib/cmake/OpenColorIO
-          python3 -c "open('OpenColorIO/lib/cmake/OpenColorIO/OpenColorIOConfig.cmake','w').write('\n'.join(['if(NOT TARGET OpenColorIO::OpenColorIO)','  add_library(OpenColorIO::OpenColorIO SHARED IMPORTED)','  set_target_properties(OpenColorIO::OpenColorIO PROPERTIES','    IMPORTED_LOCATION \"\${CMAKE_CURRENT_LIST_DIR}/../../../../lib/libOpenColorIO.so\"','    INTERFACE_INCLUDE_DIRECTORIES \"\${CMAKE_CURRENT_LIST_DIR}/../../../../include\"','  )','endif()','set(OpenColorIO_FOUND TRUE)','set(OPENCOLORIO_VERSION \"2.3.2\")'])+'\n')"
+          python3 -c "open('OpenColorIO/lib/cmake/OpenColorIO/OpenColorIOConfig.cmake','w').write('\n'.join(['if(NOT TARGET OpenColorIO::OpenColorIO)','  add_library(OpenColorIO::OpenColorIO SHARED IMPORTED)','  set_target_properties(OpenColorIO::OpenColorIO PROPERTIES','    IMPORTED_LOCATION \"\${CMAKE_CURRENT_LIST_DIR}/../../../lib/libOpenColorIO.so\"','    INTERFACE_INCLUDE_DIRECTORIES \"\${CMAKE_CURRENT_LIST_DIR}/../../../include\"','  )','endif()','set(OpenColorIO_FOUND TRUE)','set(OPENCOLORIO_VERSION \"2.3.2\")'])+'\n')"
           # Fix cmake path: ensure IMath/lib/cmake/Imath/ exists for find_package
           rm -rf "$LIB_DIR/IMath/lib/cmake"
           mkdir -p "$LIB_DIR/IMath/lib"
