@@ -56,6 +56,7 @@ jobs:
 
       - name: Prepare output (static libs .a)
         run: |
+          rm -rf Tbb
           mkdir -p Tbb/lib Tbb/include
 
           for f in install_root/lib/*.a; do
