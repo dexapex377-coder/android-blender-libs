@@ -42,7 +42,7 @@ jobs:
             -DANDROID_ABI=arm64-v8a \
             -DANDROID_PLATFORM=android-29 \
             -DCMAKE_BUILD_TYPE=Release \
-            -DBUILD_SHARED_LIBS=OFF \
+            -DBUILD_SHARED_LIBS=ON \
             -DTBB_TEST=OFF \
             -DTBB_EXAMPLES=OFF \
             -DTBB_STRICT=OFF \
@@ -54,11 +54,15 @@ jobs:
           ninja -C build_tbb -j$(nproc)
           ninja -C build_tbb install
 
-      - name: Prepare output (static libs .a)
+      - name: Prepare output (shared libs .so + static libs .a)
         run: |
           rm -rf Tbb
           mkdir -p Tbb/lib Tbb/include
 
+          for f in install_root/lib/*.so; do
+            [ -f "$f" ] || continue
+            cp -v "$f" Tbb/lib/
+          done
           for f in install_root/lib/*.a; do
             [ -f "$f" ] || continue
             cp -v "$f" Tbb/lib/
