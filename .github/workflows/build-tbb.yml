@@ -52,20 +52,15 @@ jobs:
           ninja -C build_tbb -j$(nproc)
           ninja -C build_tbb install
 
-      - name: Strip and prepare output
+      - name: Prepare output (NO strip shared libs - need symbols for linking)
         run: |
-          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
-          STRIP="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
-
           mkdir -p Tbb/lib Tbb/include
 
           for f in install_root/lib/*.so; do
             [ -f "$f" ] || continue
-            "$STRIP" -s "$f"
             cp -v "$f" Tbb/lib/
           done
           cp -rv install_root/include/* Tbb/include/ 2>/dev/null || true
-          # oneTBB puts headers in include/onednn, check for tbb subdir
           cp -rv install_root/include/tbb* Tbb/include/ 2>/dev/null || true
 
           echo "=== TBB structure ==="
