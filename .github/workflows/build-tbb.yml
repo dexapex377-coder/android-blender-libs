@@ -54,11 +54,11 @@ jobs:
           ninja -C build_tbb -j$(nproc)
           ninja -C build_tbb install
 
-      - name: Prepare output (NO strip shared libs - need symbols for linking)
+      - name: Prepare output (static libs .a)
         run: |
           mkdir -p Tbb/lib Tbb/include
 
-          for f in install_root/lib/*.so; do
+          for f in install_root/lib/*.a; do
             [ -f "$f" ] || continue
             cp -v "$f" Tbb/lib/
           done
