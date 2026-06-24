@@ -55,16 +55,12 @@ jobs:
           ninja -C build_png -j$(nproc)
           ninja -C build_png install
 
-      - name: Strip and prepare output
+      - name: Prepare output (shared libs .so)
         run: |
-          NDK_DIR="${{ steps.setup-ndk.outputs.ndk-path }}"
-          STRIP="$NDK_DIR/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip"
-
           mkdir -p Png/lib Png/include
 
           for f in install_root/lib/*.so; do
             [ -f "$f" ] || continue
-            "$STRIP" -s "$f"
             cp -v "$f" Png/lib/
           done
           cp -rv install_root/include/* Png/include/
